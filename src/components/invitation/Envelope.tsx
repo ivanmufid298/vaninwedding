@@ -36,7 +36,10 @@ export default function Envelope({ open, hidden, onOpen }: EnvelopeProps) {
         alt=""
         onClick={handleFloralClick}
       />
-      <div className={styles.envEyebrow}>The Wedding Of</div>
+      {/* spacer only: the visible label is IntroLabel, which slides in from the preloader */}
+      <div className={styles.envEyebrow} style={{ visibility: "hidden" }} aria-hidden="true">
+        The Wedding Of
+      </div>
       <div
         className={`${styles.envelopeWrap}${open ? ` ${styles.open}` : ""}`}
         role="button"

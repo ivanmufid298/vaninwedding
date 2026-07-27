@@ -1,0 +1,25 @@
+.introLabel{
+  position:fixed; left:50%; top:54%; transform:translate(-50%,-50%);
+  text-align:center; z-index:310; pointer-events:none;
+  transition: top .8s cubic-bezier(.4,0,.2,1), opacity .9s ease;
+  opacity:0.9;
+}
+.envelopePhase{ top:31%; }
+.fadeOut{ opacity:0; }
+
+.eyebrowLine{
+  letter-spacing:0.45em; font-size:11px; color:var(--gold-soft); text-transform:uppercase; white-space:nowrap;
+}
+
+/* absolutely positioned so it never affects introLabel's height/centering while hidden during preload */
+.namesLine{
+  position:absolute; left:50%; top:100%; margin-top:8px; transform:translateX(-50%);
+  letter-spacing:0.3em; font-size:11px; color:var(--gold-soft); text-transform:uppercase; white-space:nowrap;
+  opacity:0; transition:opacity .5s ease;
+}
+.envelopePhase .namesLine{ opacity:1; transition-delay:.7s; }
+
+@media (prefers-reduced-motion: reduce){
+  .introLabel{ transition-duration:.3s !important; }
+  .namesLine{ transition-delay:0s !important; }
+}

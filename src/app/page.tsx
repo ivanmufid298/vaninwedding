@@ -1,5 +1,10 @@
+import { Suspense } from "react";
 import Invitation from "@/components/invitation/Invitation";
 
 export default function Home() {
-  return <Invitation />;
+  return (
+    <Suspense fallback={null}>
+      <Invitation />
+    </Suspense>
+  );
 }

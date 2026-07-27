@@ -2,7 +2,10 @@
 
 import { useCallback, useEffect, useRef, useState, type MouseEvent } from "react";
 import { FloralClickProvider, type FloralClickHandler } from "./FloralClickContext";
+import Preloader from "./Preloader";
+import IntroLabel from "./IntroLabel";
 import Envelope from "./Envelope";
+import InviteCard from "./InviteCard";
 import Curtain from "./Curtain";
 import Deck, { type Countdown } from "./Deck";
 import ScrollCue from "./ScrollCue";
@@ -12,6 +15,14 @@ import PetalLayer, { type Petal } from "./PetalLayer";
 const TOTAL_SLIDES = 5;
 const PETAL_COLORS = ["#8fa178", "#fffdf8", "#5f6f4c", "#e3cd9a", "#e7b9c2"];
 const WEDDING_TARGET = new Date("2026-08-30T10:30:00+07:00").getTime();
+const PRELOAD_ASSETS = [
+  "/assets/spray.webp",
+  "/assets/backdrop.webp",
+  "/assets/cluster.webp",
+  "/assets/cluster_small.webp",
+  "/assets/vase.webp",
+];
+const MIN_PRELOAD_DURATION = 1200;
 
 function pad(n: number) {
   return String(n).padStart(2, "0");
@@ -26,13 +37,18 @@ export default function Invitation() {
   const [envelopeOpen, setEnvelopeOpen] = useState(false);
   const [envelopeHidden, setEnvelopeHidden] = useState(false);
   const [curtainOpen, setCurtainOpen] = useState(false);
-  const [curtainGone, setCurtainGone] = useState(false);
+  const [curtainGone, setCurtainGone] = useState(true);
   const [dotsShow, setDotsShow] = useState(false);
+  const [inviteShown, setInviteShown] = useState(false);
+  const [inviteLeaving, setInviteLeaving] = useState(false);
   const openedRef = useRef(false);
+  const continuedRef = useRef(false);
   const timeoutIdsRef = useRef<ReturnType<typeof setTimeout>[]>([]);
 
   const [petals, setPetals] = useState<Petal[]>([]);
   const petalIdRef = useRef(0);
+
+  const [introReady, setIntroReady] = useState(false);
 
   const [countdown, setCountdown] = useState<Countdown>({
     days: "00",
@@ -60,16 +76,28 @@ export default function Invitation() {
     openedRef.current = true;
     setEnvelopeOpen(true);
 
+    // envelope fades out and the invite card flips/zooms in at the same moment, so the
+    // card's opaque background covers the envelope with no gap where anything behind could show
     timeoutIdsRef.current.push(
       setTimeout(() => {
         setEnvelopeHidden(true);
+        setInviteShown(true);
       }, 1000)
     );
+  }, []);
+
+  const handleContinue = useCallback(() => {
+    if (continuedRef.current) return;
+    continuedRef.current = true;
+    setInviteLeaving(true);
+    setInviteShown(false);
+    // reveal the closed curtain immediately so it crossfades in as the invite card fades out
+    setCurtainGone(false);
 
     timeoutIdsRef.current.push(
       setTimeout(() => {
         setCurtainOpen(true);
-      }, 1750)
+      }, 700)
     );
 
     timeoutIdsRef.current.push(
@@ -78,7 +106,7 @@ export default function Invitation() {
         deckReadyRef.current = true;
         busyRef.current = false;
         setDotsShow(true);
-      }, 3700)
+      }, 700 + 1950)
     );
   }, []);
 
@@ -86,6 +114,33 @@ export default function Invitation() {
     const ids = timeoutIdsRef.current;
     return () => {
       ids.forEach(clearTimeout);
+    };
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    const start = Date.now();
+
+    const loaders = PRELOAD_ASSETS.map(
+      (src) =>
+        new Promise<void>((resolve) => {
+          const img = new Image();
+          img.onload = () => resolve();
+          img.onerror = () => resolve();
+          img.src = src;
+        })
+    );
+
+    Promise.all(loaders).then(() => {
+      if (cancelled) return;
+      const remaining = Math.max(0, MIN_PRELOAD_DURATION - (Date.now() - start));
+      setTimeout(() => {
+        if (!cancelled) setIntroReady(true);
+      }, remaining);
+    });
+
+    return () => {
+      cancelled = true;
     };
   }, []);
 
@@ -202,7 +257,10 @@ export default function Invitation() {
 
   return (
     <FloralClickProvider value={handleFloralClick}>
+      <Preloader hidden={introReady} />
+      <IntroLabel phase={introReady ? "envelope" : "preload"} visible={!envelopeHidden} />
       <Envelope open={envelopeOpen} hidden={envelopeHidden} onOpen={openEnvelope} />
+      <InviteCard shown={inviteShown} leaving={inviteLeaving} onContinue={handleContinue} />
       <Curtain open={curtainOpen} gone={curtainGone} />
       <Deck current={current} countdown={countdown} onRsvpClick={handleRsvpClick} />
       <ScrollCue current={current} total={TOTAL_SLIDES} />

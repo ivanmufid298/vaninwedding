@@ -1,0 +1,62 @@
+.overlay{
+  position:fixed; inset:0; z-index:220; display:flex; align-items:center; justify-content:center;
+  padding:26px;
+  perspective:1400px;
+  background:radial-gradient(circle at 50% 12%, rgba(226,233,213,0.10), transparent 55%),
+             linear-gradient(170deg,#4a5a3c 0%, var(--sage-dark) 80%);
+  opacity:0; pointer-events:none; transition:opacity .2s ease;
+}
+/* entering is kept fast so nothing behind (fading envelope, hero slide) has time to peek through;
+   leaving is slower so it can crossfade gracefully into the curtain, which is already closed behind it */
+.overlay.leaving{ transition:opacity .6s ease; }
+.shown{ opacity:1; pointer-events:auto; }
+
+.card{
+  position:relative; width:min(86vw,340px); text-align:center;
+  background:linear-gradient(180deg,#fffdf7,#f7f0dd);
+  border:1px solid var(--line); border-radius:8px;
+  box-shadow:0 24px 60px -12px rgba(0,0,0,0.5);
+  padding:40px 26px 30px;
+  transform:rotateY(-130deg) scale(.32); opacity:0;
+  transform-style:preserve-3d;
+  transition:transform 1s cubic-bezier(.22,.68,.15,1), opacity .6s ease;
+}
+.shown .card{ transform:rotateY(0deg) scale(1); opacity:1; }
+
+.corner{ position:absolute; top:-8%; width:96px; opacity:0.9; z-index:0; }
+.cornerLeft{ left:1%; }
+.cornerRight{ right:1%; transform:scaleX(-1); }
+
+.eyebrow{ font-size:11px; letter-spacing:.35em; text-transform:uppercase; color:var(--gold); margin-bottom:12px; }
+.guestName{ font-family:var(--serif); font-weight:500; font-size:clamp(22px,6vw,29px); color:var(--sage-dark); line-height:1.2; }
+
+.qrBox{
+  width:132px; height:132px; margin:24px auto 0; display:flex; align-items:center; justify-content:center;
+  background:#fff; border:1px solid var(--line); border-radius:6px; color:var(--sage-deep);
+}
+.qrLabel{ margin-top:9px; font-size:10px; letter-spacing:.2em; text-transform:uppercase; opacity:.6; }
+
+.downloadBtn{
+  display:inline-block; margin-top:18px; font-size:10.5px; letter-spacing:.2em; text-transform:uppercase;
+  color:var(--sage-dark); border:1px solid var(--gold); padding:11px 24px; border-radius:2px; text-decoration:none;
+  background:none; cursor:pointer; transition:background .3s ease,color .3s ease;
+}
+.downloadBtn:hover{ background:var(--gold); color:#fff; }
+
+.continueHint{
+  margin-top:26px; font-size:10px; letter-spacing:.24em; text-transform:uppercase; color:var(--sage-deep);
+  opacity:.65; animation:pulse 2.2s ease-in-out infinite;
+}
+@keyframes pulse{ 0%,100%{opacity:.4;} 50%{opacity:.8;} }
+
+@media (max-width:380px){
+  .card{ padding:32px 20px 24px; }
+  .qrBox{ width:112px; height:112px; }
+  .corner{ width:70px; }
+}
+
+@media (prefers-reduced-motion: reduce){
+  .overlay{ transition-duration:.3s !important; }
+  .card{ transition-duration:.3s !important; }
+  .continueHint{ animation:none !important; }
+}
