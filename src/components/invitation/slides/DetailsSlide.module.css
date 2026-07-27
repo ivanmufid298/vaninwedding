@@ -1,0 +1,16 @@
+.title{ font-family:var(--serif); font-size:clamp(25px,5vw,31px); color:var(--sage-dark); margin-bottom:4px; }
+.subtitle{ font-size:11.5px; letter-spacing:.2em; text-transform:uppercase; color:var(--sage-deep); }
+.cluster{ width:220px; margin:14px auto 10px; display:block; }
+.card{ border:1px solid var(--line); border-radius:6px; padding:28px 24px; background:var(--paper);
+  max-width:330px; margin:0 auto; }
+.card h3{ font-family:var(--serif); font-weight:600; font-size:23px; color:var(--sage-dark); margin-bottom:10px; }
+.card p{ font-size:14px; line-height:1.8; opacity:.85; }
+.day{ display:block; margin-top:10px; font-size:11px; letter-spacing:.2em; text-transform:uppercase;
+  color:var(--gold); border-top:1px solid var(--line); padding-top:10px; }
+
+@media (max-width:420px){
+  .cluster{ width:170px; }
+}
+@media (max-height:640px){
+  .cluster{ width:160px; }
+}

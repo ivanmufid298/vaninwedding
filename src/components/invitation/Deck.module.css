@@ -1,0 +1,24 @@
+.deck{ position:fixed; inset:0; z-index:10; }
+
+.slide{ position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center;
+  text-align:center; padding:56px 26px; opacity:0; visibility:hidden;
+  transform:scale(0.82); transform-origin:center center;
+  transition:opacity .95s cubic-bezier(.4,0,.2,1), transform .95s cubic-bezier(.4,0,.2,1), visibility .95s;
+  overflow:hidden; }
+.active{ opacity:1; visibility:visible; transform:scale(1); }
+.past{ opacity:0; visibility:hidden; transform:scale(1.45); }
+.slideInner{ position:relative; z-index:2; width:100%; max-width:520px; }
+
+.hero{ background:linear-gradient(180deg,var(--ivory) 0%,var(--ivory) 72%,var(--sage-pale) 170%); }
+.quote{ background:var(--sage-dark); color:var(--ivory); }
+.details{ background:linear-gradient(180deg,var(--paper),var(--ivory)); }
+.count{ background:linear-gradient(180deg,var(--ivory),var(--sage-pale) 190%); }
+.closing{ background:var(--ivory-deep); }
+
+@media (max-width:420px){
+  .slide{ padding:44px 20px; }
+}
+
+@media (prefers-reduced-motion: reduce){
+  .slide{ transition-duration:.3s !important; }
+}

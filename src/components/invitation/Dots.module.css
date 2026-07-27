@@ -1,0 +1,6 @@
+.dots{ position:fixed; right:16px; top:50%; transform:translateY(-50%); z-index:60;
+  display:flex; flex-direction:column; gap:9px; opacity:0; transition:opacity .7s ease; }
+.show{ opacity:1; }
+.dots button{ width:7px; height:7px; border-radius:50%; border:1px solid var(--gold);
+  background:transparent; cursor:pointer; padding:0; transition:background .3s ease, transform .3s ease; }
+.on{ background:var(--gold); transform:scale(1.35); }

@@ -1,0 +1,22 @@
+.curtain{ position:fixed; inset:0; z-index:150; pointer-events:none; }
+.gone{ display:none; }
+.curtainHalf{ position:absolute; top:0; bottom:0; width:52%; overflow:hidden;
+  background:linear-gradient(180deg,var(--paper),var(--ivory) 55%,var(--ivory-deep));
+  transition:transform 1.9s cubic-bezier(.66,0,.28,1); }
+.left{ left:0; box-shadow:6px 0 24px rgba(0,0,0,0.10); }
+.right{ right:0; box-shadow:-6px 0 24px rgba(0,0,0,0.10); }
+.curtainHalf img{ position:absolute; width:190px; opacity:0.96; }
+.curtainHalf.right img{ transform:scaleX(-1); }
+.curtainEdge{ position:absolute; top:0; bottom:0; width:2px; background:linear-gradient(180deg,transparent,var(--gold),transparent); opacity:.5; }
+.curtainHalf.left .curtainEdge{ right:0; }
+.curtainHalf.right .curtainEdge{ left:0; }
+.curtain.open .curtainHalf.left{ transform:translateX(-102%); }
+.curtain.open .curtainHalf.right{ transform:translateX(102%); }
+
+@media (max-width:420px){
+  .curtainHalf img{ width:140px; }
+}
+
+@media (prefers-reduced-motion: reduce){
+  .curtainHalf{ transition-duration:.3s !important; }
+}

@@ -1,0 +1,39 @@
+:root{
+  --ink:#2a2418;
+  --ivory:#faf7ee;
+  --ivory-deep:#f1e9d6;
+  --paper:#fffdf9;
+  --sage:#8fa178;
+  --sage-deep:#5f6f4c;
+  --sage-dark:#333f2a;
+  --sage-pale:#e2e9d5;
+  --gold:#c7a561;
+  --gold-soft:#e3cd9a;
+  --blush:#e7b9c2;
+  --line: rgba(199,165,97,0.35);
+  --serif: var(--font-serif), serif;
+  --script: var(--font-script), cursive;
+  --sans: var(--font-sans), sans-serif;
+}
+
+*{box-sizing:border-box; margin:0; padding:0;}
+html,body{ height:100%; overflow:hidden; background:var(--ivory); color:var(--ink);
+  font-family:var(--sans); -webkit-tap-highlight-color:transparent; }
+::selection{background:var(--gold-soft); color:var(--sage-dark);}
+img{ -webkit-user-drag:none; user-select:none; }
+
+/* shared floral/petal utilities, reused across Envelope, Curtain and every slide */
+.floral{ cursor:pointer; filter:drop-shadow(0 6px 10px rgba(0,0,0,0.10)); }
+.rotate{ animation:swayRotate 6.5s ease-in-out infinite; transform-origin:top center; }
+.float{ animation:swayFloat 5.5s ease-in-out infinite; }
+.d2{ animation-delay:-2s; } .d3{ animation-delay:-3.6s; }
+@keyframes swayRotate{ 0%,100%{transform:rotate(-2deg) translateY(0);} 50%{transform:rotate(2.2deg) translateY(-5px);} }
+@keyframes swayFloat{ 0%,100%{transform:translateY(0);} 50%{transform:translateY(-7px);} }
+
+.petal{ position:fixed; width:6px; height:6px; border-radius:50%; pointer-events:none; z-index:999;
+  animation:petalFloat 0.9s ease-out forwards; }
+@keyframes petalFloat{ to{ transform:translate(var(--dx),var(--dy)) scale(0.25); opacity:0; } }
+
+@media (prefers-reduced-motion: reduce){
+  *{ animation:none !important; }
+}

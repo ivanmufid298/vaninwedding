@@ -1,0 +1,16 @@
+.vase{ width:190px; margin:0 auto 4px; display:block; }
+.note{ font-family:var(--serif); font-style:italic; font-size:17px; max-width:400px; margin:4px auto 22px;
+  line-height:1.75; color:var(--sage-dark); }
+.rsvpBtn{ display:inline-block; font-size:11.5px; letter-spacing:.24em; text-transform:uppercase;
+  color:var(--sage-dark); border:1px solid var(--gold); padding:14px 34px; border-radius:2px; text-decoration:none;
+  transition:background .3s ease,color .3s ease,transform .3s ease; background:none; cursor:pointer; }
+.rsvpBtn:hover{ background:var(--gold); color:#fff; transform:translateY(-2px); }
+.sig{ margin-top:26px; font-family:var(--script); font-size:26px; color:var(--sage-deep); }
+.love{ margin-top:8px; font-size:9.5px; letter-spacing:.3em; text-transform:uppercase; opacity:.6; }
+
+@media (max-width:420px){
+  .vase{ width:150px; }
+}
+@media (max-height:640px){
+  .vase{ width:120px; }
+}
