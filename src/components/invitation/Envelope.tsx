@@ -36,8 +36,14 @@ export default function Envelope({ open, hidden, onOpen }: EnvelopeProps) {
         alt=""
         onClick={handleFloralClick}
       />
-      {/* spacer only: the visible label is IntroLabel, which slides in from the preloader */}
-      <div className={styles.envEyebrow} style={{ visibility: "hidden" }} aria-hidden="true">
+      {/* spacer only: the visible label is IntroLabel, which slides in from the preloader and
+          measures itself against this element once it reaches the envelope phase */}
+      <div
+        className={styles.envEyebrow}
+        style={{ visibility: "hidden" }}
+        data-intro-anchor="envelope"
+        aria-hidden="true"
+      >
         The Wedding Of
       </div>
       <div

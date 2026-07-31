@@ -1,5 +1,7 @@
 "use client";
 
+/* eslint-disable @next/next/no-img-element */
+
 import styles from "./Preloader.module.css";
 
 interface PreloaderProps {
@@ -9,9 +11,13 @@ interface PreloaderProps {
 export default function Preloader({ hidden }: PreloaderProps) {
   return (
     <div className={`${styles.preloader}${hidden ? ` ${styles.hidden}` : ""}`}>
-      <div className={styles.mark}>I&nbsp;&amp;&nbsp;B</div>
-      {/* reserves the space IntroLabel visually occupies at this point, so the dots don't collide with it */}
-      <div className={styles.titleSpacer} aria-hidden="true">
+      <div className={styles.markWrap}>
+        <img className={styles.wreath} src="/assets/preload.webp" alt="" />
+        <div className={styles.mark}>I&nbsp;&amp;&nbsp;B</div>
+      </div>
+      {/* reserves the space IntroLabel visually occupies at this point, and is the position
+          IntroLabel measures itself against while in the preload phase */}
+      <div className={styles.titleSpacer} data-intro-anchor="preload" aria-hidden="true">
         The Wedding Of
       </div>
       <div className={styles.dots}>
