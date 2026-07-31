@@ -1,23 +1,133 @@
-.heroBackdrop{ width:min(108%,540px); margin:0 auto -4px; display:block; }
-.sideFloral{ position:absolute; top:10%; width:96px; z-index:1; }
-.sideFloralL{ left:-10px; }
-.sideFloralR{ right:-10px; transform:scaleX(-1); }
+/* Offsets below are derived from each asset's measured alpha bounding box, so the artwork
+   (not its transparent padding) is what actually lands on the intended edge. */
 
-.lamps{ display:flex; justify-content:center; gap:20px; margin:4px 0 14px; }
-.lamp{ width:11px; height:11px; border-radius:50%; border:1px solid var(--gold);
-  background:radial-gradient(circle at 35% 30%,#fff8e6,var(--gold-soft)); box-shadow:0 0 6px rgba(199,165,97,.45); }
-.lamp:nth-child(2){ margin-top:9px; width:14px; height:14px; }
-.lamp:nth-child(3){ margin-top:2px; }
-
-.eyebrow{ font-size:11px; letter-spacing:.5em; text-transform:uppercase; color:var(--gold); margin-bottom:16px; }
-.names{ font-family:var(--serif); font-weight:500; font-size:clamp(30px,7.6vw,50px); line-height:1.12; color:var(--sage-dark); }
-.amp{ font-family:var(--script); color:var(--gold); font-size:clamp(24px,5.6vw,34px); display:block; margin:4px 0; }
-.sub{ margin-top:14px; font-size:13.5px; letter-spacing:.06em; opacity:.78; }
-
-@media (max-width:420px){
-  .sideFloral{ width:64px; }
-  .heroBackdrop{ width:min(100%,420px); }
+.heroSection{
+  --hero-gold:#b1873a;
+  --hero-gold-soft:#c0a066;
+  --hero-ink:#6d5c40;
 }
-@media (max-height:640px){
-  .heroBackdrop{ width:min(90%,380px); }
+
+/* thin inset frame, like the reference card border */
+.heroSection::before{
+  content:""; position:absolute; inset:13px;
+  border:1px solid rgba(177,135,58,0.26);
+  pointer-events:none; z-index:0;
+}
+
+/* ---- faint watermark background ---- */
+/* kept very low opacity and desaturated so it reads as a shadow behind the content,
+   never competing with the text sitting on top of it */
+.bgLayer{ position:absolute; inset:0; z-index:0; pointer-events:none; overflow:hidden; }
+
+.bgPillar{
+  --pw:min(42vw,236px);
+  position:absolute; width:var(--pw); top:50%;
+  opacity:0.11; filter:sepia(0.35) saturate(0.7);
+}
+/* pulled outward so the two never meet in the middle at any width */
+.bgPillarLeft{ left:calc(var(--pw) * -0.28); transform:translateY(-50%); }
+.bgPillarRight{ right:calc(var(--pw) * -0.28); transform:translateY(-50%) scaleX(-1); }
+
+/* sits behind the corner bouquets (z-index 1), so it reads as one continuous arch across the top.
+   Slightly stronger than the pillars since it fills the bare centre rather than edging it. */
+.bgGarland{
+  position:absolute; left:50%; top:-4%;
+  width:min(82vw,480px); transform:translateX(-50%);
+  opacity:0.3; filter:sepia(0.2) saturate(0.8);
+  /* fades out before it reaches the crown/eyebrow so the gold text keeps its contrast */
+  -webkit-mask-image:linear-gradient(to bottom, #000 42%, transparent 94%);
+  mask-image:linear-gradient(to bottom, #000 42%, transparent 94%);
+}
+
+.bgBloom{
+  position:absolute; left:50%; bottom:-4%;
+  width:min(92vw,540px); transform:translateX(-50%);
+  opacity:0.08; filter:sepia(0.3) saturate(0.7);
+}
+
+/* ---- florals anchored in the top corners ---- */
+/* top-left/right.webp are corner pieces: artwork is already flush to its corner (inset ~1%),
+   so only a small bleed is needed to keep the sway from exposing the edge */
+.decor{ position:absolute; z-index:1; }
+.decorTopLeft{
+  --w:min(58vw,300px); width:var(--w);
+  left:calc(var(--w) * -0.02); top:calc(var(--w) * -0.02);
+}
+.decorTopRight{
+  --w:min(58vw,300px); width:var(--w);
+  right:calc(var(--w) * -0.02); top:calc(var(--w) * -0.03);
+}
+
+/* ---- gold filigree at the bottom corners ---- */
+.corner{ position:absolute; z-index:1; pointer-events:none; }
+/* frame is 853x1844, so height = width * 2.162 */
+.cornerLeft{
+  --w:min(31vw,132px); width:var(--w);
+  left:calc(var(--w) * -0.111); bottom:calc(var(--w) * -0.298 + 8px);
+}
+.cornerRight{
+  --w:min(31vw,132px); width:var(--w);
+  right:calc(var(--w) * -0.100); bottom:calc(var(--w) * -0.268 + 8px);
+}
+
+/* ---- crown: clipped to its artwork so spacing is predictable ---- */
+.crownWrap{
+  --v:40px;
+  height:var(--v); width:calc(var(--v) * 0.803);
+  overflow:hidden; display:flex; align-items:center; justify-content:center;
+  margin:0 auto 12px; pointer-events:none;
+}
+.crown{ height:calc(var(--v) / 0.775); width:auto; max-width:none; flex:none; display:block; }
+
+/* ---- stroke divider: artwork is 46.8% of frame width, 4.085:1 ---- */
+.divider{
+  --v:100px;
+  width:var(--v); height:calc(var(--v) / 4.085);
+  overflow:hidden; display:flex; align-items:center; justify-content:center;
+  margin:9px auto; pointer-events:none;
+}
+.divider img{ width:calc(var(--v) * 2.137); max-width:none; flex:none; display:block; }
+/* the upper rule sits under the short eyebrow, so it reads shorter than the one under the names */
+.dividerSm{ --v:68px; }
+
+/* ---- type ---- */
+/* kept narrow enough to clear the corner florals at every width */
+.eyebrow{
+  font-size:10.5px; letter-spacing:.28em; text-transform:uppercase; color:var(--hero-gold-soft);
+}
+.names{
+  font-family:var(--serif); font-style:italic; font-weight:500;
+  font-size:clamp(25px,6.6vw,42px); line-height:1.2; color:var(--hero-gold);
+}
+.amp{ display:block; font-size:0.6em; margin:1px 0; }
+.date{ font-family:var(--serif); font-size:16px; color:var(--hero-ink); }
+.venue{ font-family:var(--serif); font-size:16px; color:var(--hero-ink); margin-top:1px; }
+
+/* ---- stage photo ---- */
+.stageWrap{ display:flex; justify-content:center; margin-top:14px; }
+/* capped just under 100vw so the stage never gets clipped by the slide's overflow:hidden */
+.stage{ width:min(112%,580px,98vw); display:block; }
+
+@media (max-width:380px){
+  .eyebrow{ font-size:9.5px; letter-spacing:.22em; }
+}
+
+/* short viewports: the slide is overflow:hidden, so keep the stack inside the fold */
+@media (max-height:700px){
+  .crownWrap{ --v:32px; margin-bottom:8px; }
+  .divider{ --v:88px; margin:6px auto; }
+  .dividerSm{ --v:60px; }
+  .names{ font-size:clamp(22px,5.8vw,34px); }
+  .date, .venue{ font-size:14px; }
+  .stageWrap{ margin-top:10px; }
+  .stage{ width:min(112%,500px,96vw); }
+}
+@media (max-height:600px){
+  .crownWrap{ --v:26px; margin-bottom:6px; }
+  .divider{ --v:76px; margin:4px auto; }
+  .dividerSm{ --v:52px; }
+  .eyebrow{ font-size:10px; }
+  .names{ font-size:clamp(20px,5.2vw,28px); }
+  .date, .venue{ font-size:12.5px; }
+  .stage{ width:min(108%,420px,94vw); }
 }

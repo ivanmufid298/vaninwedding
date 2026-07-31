@@ -10,6 +10,7 @@ import Curtain from "./Curtain";
 import Deck, { type Countdown } from "./Deck";
 import ScrollCue from "./ScrollCue";
 import Dots from "./Dots";
+import MusicToggle from "./MusicToggle";
 import PetalLayer, { type Petal } from "./PetalLayer";
 
 const TOTAL_SLIDES = 5;
@@ -47,6 +48,9 @@ export default function Invitation() {
 
   const [petals, setPetals] = useState<Petal[]>([]);
   const petalIdRef = useRef(0);
+
+  const audioRef = useRef<HTMLAudioElement>(null);
+  const [musicOn, setMusicOn] = useState(false);
 
   const [introReady, setIntroReady] = useState(false);
 
@@ -106,6 +110,14 @@ export default function Invitation() {
         deckReadyRef.current = true;
         busyRef.current = false;
         setDotsShow(true);
+        // music only starts here — never during the preloader, envelope or invite card
+        const el = audioRef.current;
+        if (el) {
+          el.volume = 0.55;
+          el.play().catch(() => {
+            /* browser refused autoplay; the toggle button can still start it */
+          });
+        }
       }, 700 + 1950)
     );
   }, []);
@@ -248,6 +260,16 @@ export default function Invitation() {
     };
   }, [next, prev]);
 
+  const toggleMusic = useCallback(() => {
+    const el = audioRef.current;
+    if (!el) return;
+    if (el.paused) {
+      el.play().catch(() => {});
+    } else {
+      el.pause();
+    }
+  }, []);
+
   const handleRsvpClick = (e: MouseEvent) => {
     e.preventDefault();
     alert(
@@ -265,7 +287,19 @@ export default function Invitation() {
       <Deck current={current} countdown={countdown} onRsvpClick={handleRsvpClick} />
       <ScrollCue current={current} total={TOTAL_SLIDES} />
       <Dots total={TOTAL_SLIDES} current={current} show={dotsShow} onSelect={goTo} />
+      <MusicToggle playing={musicOn} show={dotsShow} onToggle={toggleMusic} />
       <PetalLayer petals={petals} onDone={removePetal} />
+
+      {/* no autoplay attribute: playback is started explicitly once the deck is revealed.
+          State is driven by the element's own events so the icon always matches reality. */}
+      <audio
+        ref={audioRef}
+        src="/assets/berpayung-tuhan.mp3"
+        loop
+        preload="auto"
+        onPlay={() => setMusicOn(true)}
+        onPause={() => setMusicOn(false)}
+      />
     </FloralClickProvider>
   );
 }

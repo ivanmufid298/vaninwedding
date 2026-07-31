@@ -1,0 +1,21 @@
+/* mirrors Dots: same vertical centre and z-index, on the opposite edge */
+.musicBtn{
+  position:fixed; left:16px; top:50%; transform:translateY(-50%); z-index:60;
+  width:34px; height:34px; padding:0; border-radius:50%;
+  border:1px solid var(--gold); background:rgba(255,253,249,0.72);
+  color:var(--sage-deep); cursor:pointer;
+  display:flex; align-items:center; justify-content:center;
+  opacity:0; pointer-events:none;
+  transition:opacity .7s ease, background .3s ease, color .3s ease;
+  -webkit-backdrop-filter:blur(4px); backdrop-filter:blur(4px);
+}
+.show{ opacity:1; pointer-events:auto; }
+.musicBtn:hover{ background:var(--gold); color:#fff; }
+
+.icon{ display:block; }
+.spinning{ animation:noteSpin 4.5s linear infinite; }
+@keyframes noteSpin{ from{ transform:rotate(0deg); } to{ transform:rotate(360deg); } }
+
+@media (max-width:380px){
+  .musicBtn{ left:12px; width:30px; height:30px; }
+}
