@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Cormorant_Garamond, Alex_Brush, Jost } from "next/font/google";
+import { Cormorant_Garamond, Alex_Brush, Jost, Amiri } from "next/font/google";
 import "./globals.css";
 
 const cormorantGaramond = Cormorant_Garamond({
@@ -24,6 +24,14 @@ const jost = Jost({
   display: "swap",
 });
 
+// Naskh face for the du'a — the Latin fonts above carry no Arabic glyphs or harakat
+const amiri = Amiri({
+  subsets: ["arabic"],
+  weight: ["400", "700"],
+  variable: "--font-arabic",
+  display: "swap",
+});
+
 export const metadata: Metadata = {
   title: "Undangan Pernikahan — Ivan & Banin",
   description: "Undangan pernikahan Ivan Muhammad Mufid & Banin Azzibara",
@@ -44,7 +52,7 @@ export default function RootLayout({
   return (
     <html
       lang="id"
-      className={`${cormorantGaramond.variable} ${alexBrush.variable} ${jost.variable}`}
+      className={`${cormorantGaramond.variable} ${alexBrush.variable} ${jost.variable} ${amiri.variable}`}
     >
       <body>{children}</body>
     </html>
