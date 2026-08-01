@@ -16,9 +16,13 @@ import PetalLayer, { type Petal } from "./PetalLayer";
 const TOTAL_SLIDES = 5;
 const PETAL_COLORS = ["#8fa178", "#fffdf8", "#5f6f4c", "#e3cd9a", "#e7b9c2"];
 const WEDDING_TARGET = new Date("2026-08-30T10:30:00+07:00").getTime();
+// the envelope screen is the first thing shown after the preloader, so its florals are
+// preloaded here to stop them popping in
 const PRELOAD_ASSETS = [
   "/assets/spray.webp",
-  "/assets/backdrop.webp",
+  "/assets/top-left3.webp",
+  "/assets/top-right2.webp",
+  "/assets/flower-decor2.webp",
   "/assets/cluster.webp",
   "/assets/cluster_small.webp",
   "/assets/vase.webp",

@@ -6,9 +6,35 @@
 }
 .hidden{ opacity:0; visibility:hidden; pointer-events:none; }
 
-.envCorner{ position:absolute; top:-30px; width:110px; opacity:0.95; }
-.envCornerLeft{ left:2%; }
-.envCornerRight{ right:2%; transform:scaleX(-1); }
+/* sits behind every other layer (envelope/text are z-index 2, corner florals are auto) */
+.envWatermark{
+  position:absolute; left:50%; top:46%; z-index:0; pointer-events:none;
+  width:min(150vw,760px); transform:translate(-50%,-50%);
+  opacity:0.09;
+}
+
+/* top-left3/top-right2 are dedicated corner pieces with their artwork already flush to the
+   corner, so they only need a small bleed to keep the sway from exposing the edge */
+.envCorner{ position:absolute; opacity:0.95; }
+.envCornerLeft{
+  --w:min(54vw,272px); width:var(--w);
+  left:calc(var(--w) * -0.04); top:calc(var(--w) * -0.04);
+}
+.envCornerRight{
+  --w:min(54vw,272px); width:var(--w);
+  right:calc(var(--w) * -0.04); top:calc(var(--w) * -0.04);
+}
+
+/* flower-decor2 is a horizontal band with ~19% empty frame above the artwork and ~19% below.
+   The offset is solved against viewport height (not the image's own width) so the flowers always
+   start at ~78% of the screen — below the tap hint, whatever the aspect ratio:
+     top of artwork = 100vh + |bottom| - 0.811 * height,  height = 0.667 * width  */
+.envBottomBand{
+  --w:min(160vw,860px);
+  position:absolute; left:50%; width:var(--w);
+  bottom:calc(22vh - var(--w) * 0.541); transform:translateX(-50%);
+  opacity:0.95;
+}
 
 /* margin-bottom leaves room for IntroLabel's second line ("Ivan & Banin"), which hangs
    below this spacer rather than taking part in the flex flow */
@@ -42,8 +68,10 @@
 .envelopeWrap.open .letter{ transform:translate(-50%,-128%); }
 .envelopeWrap.open .envShadow{ opacity:.3; }
 
-@media (max-width:420px){
-  .envCorner{ width:80px; }
+/* short screens: keep the corner bouquets from crowding the envelope
+   (the band needs no override — its offset is already viewport-height aware) */
+@media (max-height:620px){
+  .envCornerLeft, .envCornerRight{ --w:min(44vw,210px); }
 }
 
 @media (prefers-reduced-motion: reduce){

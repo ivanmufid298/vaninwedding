@@ -24,15 +24,26 @@ export default function Envelope({ open, hidden, onOpen }: EnvelopeProps) {
 
   return (
     <div className={`${styles.envelopeScreen}${hidden ? ` ${styles.hidden}` : ""}`}>
+      {/* faint garland behind everything, so the dark green doesn't read as flat */}
+      <img className={styles.envWatermark} src="/assets/flower-decor4.webp" alt="" aria-hidden="true" />
+
       <img
         className={`${styles.envCorner} ${styles.envCornerLeft} floral rotate`}
-        src="/assets/spray.webp"
+        src="/assets/top-left3.webp"
         alt=""
         onClick={handleFloralClick}
       />
       <img
         className={`${styles.envCorner} ${styles.envCornerRight} floral rotate d2`}
-        src="/assets/spray.webp"
+        src="/assets/top-right2.webp"
+        alt=""
+        onClick={handleFloralClick}
+      />
+
+      {/* wide floral band filling the bottom of the screen */}
+      <img
+        className={`${styles.envBottomBand} floral`}
+        src="/assets/flower-decor2.webp"
         alt=""
         onClick={handleFloralClick}
       />
