@@ -23,9 +23,33 @@
 }
 .shown .card{ transform:rotateY(0deg) scale(1); opacity:1; }
 
-.corner{ position:absolute; top:-8%; width:96px; opacity:0.9; z-index:0; }
-.cornerLeft{ left:1%; }
-.cornerRight{ right:1%; transform:scaleX(-1); }
+/* florals match the envelope screen so the two dark-green screens read as one set.
+   All sit at z-index 0, and the card comes later in the DOM, so it always paints on top. */
+.bgWatermark{
+  position:absolute; left:50%; top:46%; z-index:0; pointer-events:none;
+  width:min(150vw,760px); transform:translate(-50%,-50%);
+  opacity:0.09;
+}
+
+/* top-left3/top-right2 have their artwork flush to the corner, so only a small bleed is needed */
+.corner{ position:absolute; opacity:0.95; z-index:0; pointer-events:none; }
+.cornerLeft{
+  --w:min(54vw,272px); width:var(--w);
+  left:calc(var(--w) * -0.04); top:calc(var(--w) * -0.04);
+}
+.cornerRight{
+  --w:min(54vw,272px); width:var(--w);
+  right:calc(var(--w) * -0.04); top:calc(var(--w) * -0.04);
+}
+
+/* same viewport-height-solved offset as the envelope screen, so the flowers land at ~78%
+   of the screen regardless of aspect ratio (flower-decor2 has ~19% empty frame below its art) */
+.bottomBand{
+  --w:min(160vw,860px);
+  position:absolute; left:50%; width:var(--w); z-index:0;
+  bottom:calc(22vh - var(--w) * 0.541); transform:translateX(-50%);
+  opacity:0.95; pointer-events:none;
+}
 
 .eyebrow{ font-size:11px; letter-spacing:.35em; text-transform:uppercase; color:var(--gold); margin-bottom:12px; }
 .guestName{ font-family:var(--serif); font-weight:500; font-size:clamp(22px,6vw,29px); color:var(--sage-dark); line-height:1.2; }
@@ -56,7 +80,11 @@
 @media (max-width:380px){
   .card{ padding:32px 20px 24px; }
   .qrBox{ width:112px; height:112px; }
-  .corner{ width:70px; }
+}
+
+/* short screens: keep the corner bouquets from crowding the card */
+@media (max-height:620px){
+  .cornerLeft, .cornerRight{ --w:min(44vw,210px); }
 }
 
 @media (prefers-reduced-motion: reduce){

@@ -4,7 +4,6 @@
 
 import { useSearchParams } from "next/navigation";
 import type { KeyboardEvent, MouseEvent } from "react";
-import { useFloralClick } from "./FloralClickContext";
 import styles from "./InviteCard.module.css";
 
 interface InviteCardProps {
@@ -14,7 +13,6 @@ interface InviteCardProps {
 }
 
 export default function InviteCard({ shown, leaving, onContinue }: InviteCardProps) {
-  const handleFloralClick = useFloralClick();
   const searchParams = useSearchParams();
   const guestName = searchParams.get("to")?.trim();
   const isNotInvited = guestName?.toLowerCase() === "not-invited";
@@ -50,17 +48,28 @@ export default function InviteCard({ shown, leaving, onContinue }: InviteCardPro
       onClick={handleContainerClick}
       onKeyDown={handleKeyDown}
     >
+      {/* Decoration only. This screen promises "tap anywhere to continue", so these must not
+          swallow the tap — they are pointer-events:none rather than petal-burst targets. */}
+      <img className={styles.bgWatermark} src="/assets/flower-decor4.webp" alt="" aria-hidden="true" />
+
       <img
         className={`${styles.corner} ${styles.cornerLeft} floral rotate`}
-        src="/assets/spray.webp"
+        src="/assets/top-left3.webp"
         alt=""
-        onClick={handleFloralClick}
+        aria-hidden="true"
       />
       <img
         className={`${styles.corner} ${styles.cornerRight} floral rotate d2`}
-        src="/assets/spray.webp"
+        src="/assets/top-right2.webp"
         alt=""
-        onClick={handleFloralClick}
+        aria-hidden="true"
+      />
+
+      <img
+        className={`${styles.bottomBand} floral`}
+        src="/assets/flower-decor2.webp"
+        alt=""
+        aria-hidden="true"
       />
       <div className={styles.card}>
         {isNotInvited ? (
