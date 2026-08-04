@@ -44,28 +44,60 @@
 .envelopeWrap{ position:relative; width:min(78vw,320px); aspect-ratio:3/2.05; cursor:pointer; perspective:1400px; z-index:2; }
 .envShadow{ position:absolute; left:8%; right:8%; bottom:-14px; height:22px;
   background:radial-gradient(ellipse at center, rgba(0,0,0,0.45), transparent 70%); filter:blur(2px); transition:opacity .6s ease; }
-.envBody{ position:absolute; inset:0; background:linear-gradient(155deg,var(--paper),var(--ivory) 60%,var(--ivory-deep));
-  border-radius:2px; box-shadow:0 18px 40px -14px rgba(0,0,0,0.6), inset 0 0 0 1px var(--line); overflow:hidden; }
-.envBody::before{ content:""; position:absolute; inset:6px; border:1px solid var(--line); pointer-events:none; }
-.letter{ position:absolute; left:50%; top:14%; width:76%; height:78%; transform:translate(-50%,6%);
+
+/* z-order: letter(1) < body(2) < flap(3) < seal(4) < florals(5) */
+/* overflow:hidden clips the paper motif to the envelope. Safe now that the letter and flap are
+   siblings rather than children — as children they were being clipped mid-animation. */
+.envBody{ position:absolute; inset:0; z-index:2; overflow:hidden;
+  background:linear-gradient(155deg,var(--paper),var(--ivory) 60%,var(--ivory-deep));
+  border-radius:2px; box-shadow:0 18px 40px -14px rgba(0,0,0,0.6), inset 0 0 0 1px var(--line); }
+.envBody::before{ content:""; position:absolute; inset:6px; border:1px solid var(--line);
+  pointer-events:none; z-index:2; }
+
+/* watermark motif printed on the envelope paper */
+.envMotif{ position:absolute; width:58%; opacity:0.17; z-index:1; pointer-events:none;
+  filter:saturate(0.75); }
+.envMotifTL{ left:-7%; top:-5%; }
+.envMotifBR{ right:-7%; bottom:-5%; transform:rotate(180deg); }
+
+/* tucked inside: fully covered by the body until it slides up on open */
+.letter{ position:absolute; left:50%; top:9%; width:80%; height:84%; transform:translate(-50%,0);
   background:linear-gradient(180deg,#fffdf7,#f7f0dd); border:1px solid var(--line); border-radius:2px;
-  box-shadow:0 6px 18px rgba(0,0,0,0.15); display:flex; align-items:center; justify-content:center; z-index:2;
+  box-shadow:0 6px 18px rgba(0,0,0,0.15); display:flex; align-items:center; justify-content:center; z-index:1;
   transition:transform 1.15s cubic-bezier(.22,.68,.2,1) .55s; }
 .letterMono{ font-family:var(--script); font-size:clamp(18px,4vw,24px); color:var(--sage-deep); }
+
 .envFlap{ position:absolute; top:0; left:0; right:0; height:58%; clip-path:polygon(0 0,100% 0,50% 100%);
   background:linear-gradient(160deg,var(--ivory),var(--ivory-deep) 60%,#e9ddc0);
-  transform-origin:top center; transform-style:preserve-3d; z-index:3; transition:transform .95s cubic-bezier(.6,0,.35,1); }
+  filter:drop-shadow(0 3px 5px rgba(0,0,0,0.13));
+  transform-origin:top center; transform-style:preserve-3d; z-index:3;
+  transition:transform .95s cubic-bezier(.6,0,.35,1), opacity .45s ease .5s; }
 .seal{ position:absolute; left:50%; top:52%; width:56px; height:56px; transform:translate(-50%,-50%);
   border-radius:50%; background:var(--paper); border:1px solid var(--gold); box-shadow:0 4px 10px rgba(0,0,0,0.25);
   display:flex; align-items:center; justify-content:center; z-index:4;
   transition:transform .5s cubic-bezier(.34,1.56,.64,1) .05s, opacity .4s ease .05s; }
+
+/* Offsets come from each asset's measured alpha box, so the artwork (not its transparent
+   padding) lands on the envelope's corner and overhangs slightly, as in the reference. */
+.envFloral{ position:absolute; z-index:5; }
+/* content sits 38.9% in from the left / 22% from the right, 1.8% from the top */
+.envFloralTop{
+  --w:min(37vw,152px); width:var(--w);
+  right:calc(var(--w) * -0.30); top:calc(var(--w) * -0.17);
+}
+/* content sits 3% in from the left, 3.1% up from the bottom (frame is 0.936 tall per width) */
+.envFloralBot{
+  --w:min(37vw,152px); width:var(--w);
+  left:calc(var(--w) * -0.18); bottom:calc(var(--w) * -0.26);
+}
 .tapHint{ margin-top:26px; font-size:12px; letter-spacing:0.18em; color:var(--ivory); opacity:0.85;
   text-transform:uppercase; z-index:2; animation:pulse 2.2s ease-in-out infinite; }
 @keyframes pulse{ 0%,100%{opacity:.5;} 50%{opacity:.95;} }
 
 .envelopeWrap.open .seal{ transform:translate(-50%,-50%) scale(.4) rotate(35deg); opacity:0; }
-.envelopeWrap.open .envFlap{ transform:rotateX(180deg); }
-.envelopeWrap.open .letter{ transform:translate(-50%,-128%); }
+/* flap fades as it swings up, so it doesn't sit over the letter emerging behind it */
+.envelopeWrap.open .envFlap{ transform:rotateX(180deg); opacity:0; }
+.envelopeWrap.open .letter{ transform:translate(-50%,-104%); }
 .envelopeWrap.open .envShadow{ opacity:.3; }
 
 /* short screens: keep the corner bouquets from crowding the envelope

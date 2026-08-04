@@ -66,12 +66,18 @@ export default function Envelope({ open, hidden, onOpen }: EnvelopeProps) {
         onKeyDown={handleKeyDown}
       >
         <div className={styles.envShadow} />
+        {/* Layer order matters: the letter sits *behind* the body so the envelope reads as
+            sealed, and it is a sibling (not a child) so sliding it out isn't clipped. */}
+        <div className={styles.letter}>
+          <span className={styles.letterMono}>I&nbsp;&amp;&nbsp;B</span>
+        </div>
         <div className={styles.envBody}>
-          <div className={styles.letter}>
-            <span className={styles.letterMono}>I&nbsp;&amp;&nbsp;B</span>
-          </div>
-          <div className={styles.envFlap} />
-          <div className={styles.seal}>
+          {/* faint paper motif, clipped to the envelope; top-left piece reused rotated for bottom-right */}
+          <img className={`${styles.envMotif} ${styles.envMotifTL}`} src="/assets/top-left4.webp" alt="" />
+          <img className={`${styles.envMotif} ${styles.envMotifBR}`} src="/assets/top-left4.webp" alt="" />
+        </div>
+        <div className={styles.envFlap} />
+        <div className={styles.seal}>
             <svg viewBox="0 0 44 44" width="44" height="44">
               <circle cx="22" cy="22" r="19" fill="none" stroke="#c7a561" strokeWidth="0.9" />
               <ellipse cx="10" cy="16" rx="4.5" ry="2" fill="#8fa178" transform="rotate(-30 10 16)" />
@@ -93,8 +99,11 @@ export default function Envelope({ open, hidden, onOpen }: EnvelopeProps) {
                 I&amp;B
               </text>
             </svg>
-          </div>
         </div>
+
+        {/* florals resting on the envelope's top-right and bottom-left corners */}
+        <img className={`${styles.envFloral} ${styles.envFloralTop}`} src="/assets/top-envelope.webp" alt="" />
+        <img className={`${styles.envFloral} ${styles.envFloralBot}`} src="/assets/bot-envelope.webp" alt="" />
       </div>
       <div className={styles.tapHint}>Ketuk amplop untuk membuka</div>
     </div>

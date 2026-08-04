@@ -284,7 +284,8 @@ export default function Invitation() {
   return (
     <FloralClickProvider value={handleFloralClick}>
       <Preloader hidden={introReady} />
-      <IntroLabel phase={introReady ? "envelope" : "preload"} visible={!envelopeHidden} />
+      {/* fades as soon as the envelope is tapped, clearing the space the letter slides up into */}
+      <IntroLabel phase={introReady ? "envelope" : "preload"} visible={!envelopeOpen} />
       <Envelope open={envelopeOpen} hidden={envelopeHidden} onOpen={openEnvelope} />
       <InviteCard shown={inviteShown} leaving={inviteLeaving} onContinue={handleContinue} />
       <Curtain open={curtainOpen} gone={curtainGone} />
