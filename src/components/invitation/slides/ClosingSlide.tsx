@@ -20,7 +20,7 @@ export default function ClosingSlide({ className, innerClassName, onRsvpClick }:
       <div className={innerClassName}>
         <img
           className={`${styles.vase} floral float`}
-          src="/assets/vase.webp"
+          src="/assets/flower-vase.webp"
           alt=""
           onClick={handleFloralClick}
         />

@@ -25,7 +25,7 @@ const PRELOAD_ASSETS = [
   "/assets/flower-decor2.webp",
   "/assets/cluster.webp",
   "/assets/cluster_small.webp",
-  "/assets/vase.webp",
+  "/assets/flower-vase.webp",
 ];
 const MIN_PRELOAD_DURATION = 1200;
 

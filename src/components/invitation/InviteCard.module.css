@@ -16,12 +16,33 @@
   background:linear-gradient(180deg,#fffdf7,#f7f0dd);
   border:1px solid var(--line); border-radius:8px;
   box-shadow:0 24px 60px -12px rgba(0,0,0,0.5);
-  padding:40px 26px 30px;
+  /* generous inset: frame.webp's corner florals spill ~30% inward, so the text column has to
+     sit clear of them */
+  padding:56px 40px 66px;
   transform:rotateY(-130deg) scale(.32); opacity:0;
   transform-style:preserve-3d;
   transition:transform 1s cubic-bezier(.22,.68,.15,1), opacity .6s ease;
 }
 .shown .card{ transform:rotateY(0deg) scale(1); opacity:1; }
+
+/* frame.webp's thin border rules sit at 6.72%/5.43% (x) and 4.90%/4.83% (y) of the artwork.
+   Scaling those out (card = the frame's inner rect) puts the rules on the card's own edge and
+   lets the corner florals bleed onto the green behind. Percentages resolve against the card:
+   left/right against its width, top/bottom against its height. */
+.frame{
+  position:absolute;
+  left:-7.65%; right:-6.18%; top:-5.43%; bottom:-5.35%;
+  background:url("/assets/frame.webp") center / 100% 100% no-repeat;
+  pointer-events:none; z-index:0;
+}
+.cardBody{ position:relative; z-index:1; }
+
+/* perspective lives here, not on .overlay, so the card still flips in 3D beside its sibling hint */
+.stack{
+  position:relative; z-index:1;
+  display:flex; flex-direction:column; align-items:center;
+  perspective:1400px;
+}
 
 /* florals match the envelope screen so the two dark-green screens read as one set.
    All sit at z-index 0, and the card comes later in the DOM, so it always paints on top. */
@@ -67,9 +88,11 @@
 }
 .downloadBtn:hover{ background:var(--gold); color:#fff; }
 
+/* now sits below the framed card on the green, so it is clear of the frame's florals */
 .continueHint{
-  margin-top:26px; font-size:10px; letter-spacing:.24em; text-transform:uppercase; color:var(--sage-deep);
-  opacity:.65; animation:pulse 2.2s ease-in-out infinite;
+  margin-top:20px; font-size:10px; letter-spacing:.2em; text-transform:uppercase;
+  color:var(--ivory); opacity:.72; animation:pulse 2.2s ease-in-out infinite;
+  text-align:center;
 }
 @keyframes pulse{ 0%,100%{opacity:.4;} 50%{opacity:.8;} }
 
@@ -78,8 +101,10 @@
 }
 
 @media (max-width:380px){
-  .card{ padding:32px 20px 24px; }
-  .qrBox{ width:112px; height:112px; }
+  .card{ padding:46px 30px 56px; }
+  .qrBox{ width:104px; height:104px; }
+  .guestName{ font-size:clamp(19px,5.4vw,24px); }
+  .continueHint{ font-size:7.5px; letter-spacing:.04em; margin-top:20px; }
 }
 
 /* short screens: keep the corner bouquets from crowding the card */
