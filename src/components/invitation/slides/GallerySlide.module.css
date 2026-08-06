@@ -1,0 +1,240 @@
+/* Dense slide: sizes are in vh so the whole thing fits without clipping (the slide is
+   overflow:hidden), and every offset/ratio below comes from the asset's measured alpha box. */
+
+.block{
+  /* clears the fixed side controls: music toggle on the left, slide dots on the right */
+  max-width:min(330px, calc(100vw - 104px)); margin:0 auto;
+  padding-bottom:clamp(18px, 3.5vh, 40px);
+}
+
+/* thin inset frame, same treatment as the hero slide */
+.gallerySection::before{
+  content:""; position:absolute; inset:13px;
+  border:1px solid rgba(177,135,58,0.26);
+  pointer-events:none; z-index:0;
+}
+
+/* ---- corner ornaments ---- */
+.corner{ position:absolute; z-index:1; }
+/* top-left-gallery: artwork flush to its corner, frame is 1.252 tall per width */
+.cornerTL{
+  --w:min(46vw,220px); width:var(--w);
+  left:calc(var(--w) * -0.04); top:calc(var(--w) * -0.04);
+}
+/* top-right-gallery: flush right/top, frame 0.789 tall per width */
+/* held back to a watermark so it doesn't compete with the heading beneath it */
+.cornerTR{
+  --w:min(50vw,240px); width:var(--w);
+  right:calc(var(--w) * -0.04); top:calc(var(--w) * -0.03);
+  opacity:0.45;
+}
+/* bot-left-gallery: insetL 2.8%, insetB 1.5% (x0.839 frame) */
+.cornerBL{
+  --w:min(40vw,190px); width:var(--w); pointer-events:none; opacity:0.9;
+  left:calc(var(--w) * -0.03); bottom:calc(var(--w) * -0.013);
+}
+/* bot-right-gallery: insetR 3.5%, insetB 7.1% (x0.838 frame) */
+.cornerBR{
+  --w:min(40vw,190px); width:var(--w); pointer-events:none; opacity:0.9;
+  right:calc(var(--w) * -0.035); bottom:calc(var(--w) * -0.06);
+}
+
+/* ---- ornaments clipped to their artwork so spacing is predictable ---- */
+/* crown-gallery: artwork 84.6% wide, 6.567:1 … actually 2.362:1 */
+.crownWrap{
+  --v:clamp(64px,13vw,104px);
+  width:var(--v); height:calc(var(--v) / 2.362);
+  overflow:hidden; display:flex; align-items:center; justify-content:center;
+  margin:0 auto clamp(4px,0.8vh,9px); pointer-events:none;
+}
+.crown{ width:calc(var(--v) / 0.846); max-width:none; flex:none; display:block; }
+
+/* name-gallery: artwork 48.4% wide, 1.412:1 */
+.nameOrnWrap{
+  --v:clamp(34px,7vw,54px);
+  width:var(--v); height:calc(var(--v) / 1.412);
+  overflow:hidden; display:flex; align-items:center; justify-content:center;
+  margin:clamp(4px,0.8vh,9px) auto; pointer-events:none;
+}
+.nameOrnWrapSm{
+  --v:clamp(26px,5.4vw,40px);
+  width:var(--v); height:calc(var(--v) / 1.412);
+  overflow:hidden; display:flex; align-items:center; justify-content:center;
+  margin:0 auto clamp(2px,0.5vh,6px); pointer-events:none;
+}
+.nameOrn{ width:calc(var(--v) / 0.484); max-width:none; flex:none; display:block; }
+
+/* stroke-gallery.webp: a vertical rod (w/h = 0.3333) with a diamond ornament at its centre.
+   Used upright for the column divider (.vRule) and rotated 90° everywhere else (under "Foto
+   Kita" and under each name), where a 90° turn makes a 724x2172 vertical frame read as a wide
+   3:1 horizontal one. stroke.webp (a different asset) was used here before; removed with it. */
+.strokeWrapH{
+  --v:clamp(80px,17vw,120px); /* final visual length once rotated */
+  width:var(--v); height:calc(var(--v) / 3);
+  overflow:hidden; position:relative; margin:clamp(4px,0.8vh,9px) auto; pointer-events:none;
+}
+/* the title's divider reads as more prominent than the two under the names */
+.strokeWrapHLg{ --v:clamp(100px,24vw,160px); margin:clamp(3px,0.7vh,8px) auto; }
+.strokeH{
+  position:absolute; top:50%; left:50%;
+  width:calc(var(--v) / 3); /* pre-rotation width = final thickness */
+  transform:translate(-50%,-50%) rotate(90deg);
+  display:block;
+}
+
+/* ---- type ---- */
+.eyebrow{
+  font-size:clamp(9px,1.3vh,11.5px); letter-spacing:.34em; text-transform:uppercase;
+  color:var(--gold);
+}
+.title{
+  font-family:var(--serif); font-weight:500;
+  font-size:clamp(26px,4.6vh,42px); line-height:1.1; color:var(--sage-dark);
+  margin-top:clamp(1px,0.3vh,4px);
+}
+.subtitle{
+  font-family:var(--sans); font-size:clamp(10.5px,1.45vh,13px); line-height:1.65;
+  color:#6d5c40; opacity:.85; margin-bottom:clamp(6px,1.2vh,14px);
+}
+
+/* ---- carousel ----
+   Track layout, as fractions of the carousel's width — the 2% gaps either side of the centre
+   are what keep the neighbours from touching the frame, as in the reference:
+     left 0..22 | gap | centre 24..76 | gap | right 78..100
+   Neighbours are a narrower portrait crop (not a scaled-down copy of the centre), so they get
+   their own width/height rather than a transform scale. Everything animates via left/width/
+   height/opacity — all interpolatable, unlike aspect-ratio. */
+/* Height comes from the track's own width via aspect-ratio (1 / (0.52 / 0.871) = 1.675), so the
+   centre slot — 52% of the width — always lands on frame-gallery's 0.871 ratio. Shrinking the
+   track on short screens is then just a width change, and every inner percentage stays true;
+   setting height alone would have squashed the frame out of proportion. */
+.carousel{
+  position:relative; width:100%; aspect-ratio:1.675; margin:0 auto;
+  overflow:hidden;
+}
+.slot{
+  position:absolute; top:50%; transform:translateY(-50%);
+  transition:left .5s cubic-bezier(.4,0,.2,1), width .5s cubic-bezier(.4,0,.2,1),
+             height .5s cubic-bezier(.4,0,.2,1), opacity .5s ease;
+}
+.slotCenter{ left:24%; width:52%; height:100%; z-index:3; opacity:1; }
+.slotLeft{ left:0; width:22%; height:84%; z-index:2; opacity:1; }
+.slotRight{ left:78%; width:22%; height:84%; z-index:2; opacity:1; }
+.slotHidden{ left:39%; width:22%; height:70%; z-index:1; opacity:0; }
+
+.photo{
+  width:100%; height:100%; object-fit:cover; display:block;
+  background:linear-gradient(180deg,#f3ead6,#e6dcc4);
+  /* generously rounded so the neighbours read as soft cards, not sharp corners */
+  border-radius:clamp(8px,3.4vw,20px);
+  box-shadow:0 3px 9px -5px rgba(0,0,0,0.2);
+}
+/* The featured photo sits *inside* the frame: inset past the gold rule (which the artwork puts
+   ~2.3% in from its own edge) so a sliver of cream shows between rule and photo.
+   Sized explicitly rather than by opposing left/right insets — an <img> is a replaced element,
+   so with width:auto it takes its intrinsic width (1536px here) and ignores `right` entirely. */
+.slotCenter .photo{
+  position:absolute; top:5%; left:6.5%;
+  width:87%;    /* 100 - 6.5 - 6.5 */
+  height:88.5%; /* 100 - 5 - 6.5   */
+  border-radius:46% 46% 10px 10px / 14% 14% 10px 10px;
+  box-shadow:none;
+}
+/* the arched gold frame now bounds the slot, rather than overhanging it */
+.photoFrame{
+  position:absolute; inset:0; width:100%; height:100%;
+  pointer-events:none; display:block;
+}
+
+.arrow{
+  position:absolute; top:50%; transform:translateY(-50%); z-index:4;
+  width:28px; height:28px; padding:0; border-radius:50%;
+  border:1px solid var(--line); background:rgba(255,253,249,0.9);
+  color:var(--gold); cursor:pointer;
+  display:flex; align-items:center; justify-content:center;
+  box-shadow:0 3px 8px rgba(0,0,0,0.14);
+}
+/* inset over the side photos rather than flush to the edge, so the left arrow doesn't
+   sit shoulder-to-shoulder with the fixed music toggle */
+.arrowPrev{ left:6%; }
+.arrowNext{ right:6%; }
+.arrow svg{ width:9px; height:15px; }
+
+.dots{ display:flex; justify-content:center; gap:7px; margin:clamp(6px,1.2vh,13px) 0; }
+.dot, .dotOn{
+  width:5px; height:5px; padding:0; border-radius:50%; border:1px solid var(--gold);
+  background:transparent; cursor:pointer;
+}
+.dotOn{ background:var(--gold); transform:scale(1.35); }
+
+/* ---- Tentang Kami ---- */
+.aboutHead{ display:flex; align-items:center; justify-content:center; gap:8px; }
+.aboutLabel{
+  font-size:clamp(9px,1.25vh,11px); letter-spacing:.28em; text-transform:uppercase;
+  color:var(--gold); white-space:nowrap;
+}
+/* about-gallery: artwork 88.9% wide, 6.567:1 */
+.aboutRule{
+  --v:clamp(38px,9vw,72px);
+  width:var(--v); height:calc(var(--v) / 6.567);
+  overflow:hidden; display:flex; align-items:center; justify-content:center; flex:none;
+}
+.aboutRule img{ width:calc(var(--v) / 0.889); max-width:none; flex:none; display:block; }
+.aboutRuleFlip{ transform:scaleX(-1); }
+
+/* relative so .vRule (absolutely positioned) can centre itself without joining the flex layout —
+   as a flex child, its 2172px-tall source image made the whole row stretch to match (see below).
+   --ruleW drives both the gap and .vRule's width from one number, so they can never drift apart
+   at a viewport where their two independent clamp()s would otherwise resolve differently. */
+.couple{
+  --ruleW:clamp(24px,6vw,36px);
+  position:relative; display:flex; align-items:flex-start; justify-content:center;
+  gap:calc(var(--ruleW) + 16px); margin-top:clamp(6px,1.2vh,14px);
+}
+.person{ flex:1 1 0; min-width:0; }
+/* "Ivan Muhammad Mufid" wraps to 2 lines in its column while "Banin Azzibara" fits on 1 — a
+   fixed 2-line box under both names (rather than trusting wrap to match) keeps the stroke and
+   meta text underneath level between the columns regardless of which name actually wraps. */
+.personName{
+  font-family:var(--serif); font-weight:500;
+  font-size:clamp(13px,1.9vh,18px); line-height:1.25; color:var(--sage-dark);
+  min-height:calc(1.25em * 2);
+  display:flex; align-items:center; justify-content:center;
+}
+.personMeta{
+  font-family:var(--sans); font-size:clamp(9px,1.25vh,11.5px); line-height:1.6;
+  color:#6d5c40; opacity:.85; margin-top:clamp(2px,0.5vh,6px);
+}
+/* Fixed size, centred between the columns via absolute positioning — NOT a flex child.
+   align-self:stretch was tried first, but flexbox computes a stretched item's line-height
+   contribution from its own unstretched hypothetical size, which for this replaced element
+   with no explicit height is its 2172px intrinsic size: the row stretched to fit the image,
+   not the other way around. Taking it out of flow sidesteps that entirely.
+   Width stays tied to --ruleW (so it can never exceed the gap it lives in and hit the text
+   either side), but height is set independently rather than via aspect-ratio, so the line reads
+   as longer without the whole ornament growing wider/heavier — the browser's default object-fit
+   (fill) stretches the artwork to that height, which barely shows given how simple the artwork is. */
+.vRule{
+  position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
+  width:var(--ruleW); height:clamp(90px,20vh,160px);
+  opacity:0.85; pointer-events:none;
+}
+
+@media (max-height:680px){
+  .subtitle{ line-height:1.45; }
+  .personMeta{ line-height:1.45; }
+  .dots{ margin:5px 0; }
+}
+
+/* smallest phones: shrink the carousel so the last line stays clear of the fixed scroll cue */
+@media (max-height:600px){
+  .carousel{ width:88%; }
+  .title{ font-size:21px; }
+  .dots{ margin:3px 0; }
+  .crownWrap{ --v:clamp(54px,11vw,80px); }
+  .strokeWrapH{ --v:64px; margin:3px auto; }
+  .strokeWrapHLg{ --v:88px; }
+  .couple{ --ruleW:18px; }
+  .vRule{ height:100px; }
+  .block{ padding-bottom:12px; }
+}

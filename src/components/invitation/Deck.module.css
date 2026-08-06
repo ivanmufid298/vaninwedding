@@ -11,6 +11,7 @@
 
 .hero{ background:linear-gradient(180deg,#fdf9ef 0%,#f8f1e0 55%,#f3ead6 100%); }
 .quote{ background:var(--sage-dark); color:var(--ivory); }
+.gallery{ background:linear-gradient(180deg,#fdfaf3 0%,#f8f2e4 60%,#f3ecdc 100%); }
 .details{ background:linear-gradient(180deg,var(--paper),var(--ivory)); }
 .count{ background:linear-gradient(180deg,var(--ivory),var(--sage-pale) 190%); }
 .closing{ background:var(--ivory-deep); }

@@ -4,6 +4,7 @@ import type { MouseEvent } from "react";
 import styles from "./Deck.module.css";
 import HeroSlide from "./slides/HeroSlide";
 import QuoteSlide from "./slides/QuoteSlide";
+import GallerySlide from "./slides/GallerySlide";
 import DetailsSlide from "./slides/DetailsSlide";
 import CountdownSlide from "./slides/CountdownSlide";
 import ClosingSlide from "./slides/ClosingSlide";
@@ -21,7 +22,7 @@ interface DeckProps {
   onRsvpClick: (e: MouseEvent) => void;
 }
 
-const BACKGROUNDS = ["hero", "quote", "details", "count", "closing"] as const;
+const BACKGROUNDS = ["hero", "quote", "gallery", "details", "count", "closing"] as const;
 
 export default function Deck({ current, countdown, onRsvpClick }: DeckProps) {
   function sectionClassName(i: number) {
@@ -35,14 +36,15 @@ export default function Deck({ current, countdown, onRsvpClick }: DeckProps) {
     <div className={styles.deck}>
       <HeroSlide className={sectionClassName(0)} innerClassName={styles.slideInner} />
       <QuoteSlide className={sectionClassName(1)} innerClassName={styles.slideInner} />
-      <DetailsSlide className={sectionClassName(2)} innerClassName={styles.slideInner} />
+      <GallerySlide className={sectionClassName(2)} innerClassName={styles.slideInner} />
+      <DetailsSlide className={sectionClassName(3)} innerClassName={styles.slideInner} />
       <CountdownSlide
-        className={sectionClassName(3)}
+        className={sectionClassName(4)}
         innerClassName={styles.slideInner}
         countdown={countdown}
       />
       <ClosingSlide
-        className={sectionClassName(4)}
+        className={sectionClassName(5)}
         innerClassName={styles.slideInner}
         onRsvpClick={onRsvpClick}
       />
