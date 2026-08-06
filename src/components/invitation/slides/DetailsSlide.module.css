@@ -1,16 +1,186 @@
-.title{ font-family:var(--serif); font-size:clamp(25px,5vw,31px); color:var(--sage-dark); margin-bottom:4px; }
-.subtitle{ font-size:11.5px; letter-spacing:.2em; text-transform:uppercase; color:var(--sage-deep); }
-.cluster{ width:220px; margin:14px auto 10px; display:block; }
-.card{ border:1px solid var(--line); border-radius:6px; padding:28px 24px; background:var(--paper);
-  max-width:330px; margin:0 auto; }
-.card h3{ font-family:var(--serif); font-weight:600; font-size:23px; color:var(--sage-dark); margin-bottom:10px; }
-.card p{ font-size:14px; line-height:1.8; opacity:.85; }
-.day{ display:block; margin-top:10px; font-size:11px; letter-spacing:.2em; text-transform:uppercase;
-  color:var(--gold); border-top:1px solid var(--line); padding-top:10px; }
+/* Dense slide: type and rhythm are sized in vh so the whole thing fits without clipping
+   (the slide is overflow:hidden), and corner offsets come from each asset's measured alpha box. */
 
-@media (max-width:420px){
-  .cluster{ width:170px; }
+.block{
+  /* clears the fixed side controls: music toggle on the left, slide dots on the right */
+  max-width:min(340px, calc(100vw - 104px)); margin:0 auto;
+  padding-bottom:clamp(14px, 2.6vh, 30px);
 }
-@media (max-height:640px){
-  .cluster{ width:160px; }
+
+/* thin inset frame, same treatment as the hero/gallery slides */
+.detailsSection::before{
+  content:""; position:absolute; inset:13px;
+  border:1px solid rgba(226,233,213,0.22);
+  pointer-events:none; z-index:0;
+}
+
+/* ---- corner florals ---- */
+.corner{ position:absolute; z-index:1; }
+/* top-left/right.webp: artwork flush to its corner, frame 1.413 tall per width */
+.cornerTL{
+  --w:min(42vw,200px); width:var(--w);
+  left:calc(var(--w) * -0.05); top:calc(var(--w) * -0.05);
+}
+.cornerTR{
+  --w:min(42vw,200px); width:var(--w);
+  right:calc(var(--w) * -0.05); top:calc(var(--w) * -0.05);
+}
+/* top-corner artwork rotated 180° to serve as the bottom corners */
+.cornerBL{
+  --w:min(32vw,150px); width:var(--w); pointer-events:none; opacity:0.9;
+  left:calc(var(--w) * -0.05); bottom:calc(var(--w) * -0.05);
+  transform:rotate(180deg);
+}
+.cornerBR{
+  --w:min(32vw,150px); width:var(--w); pointer-events:none; opacity:0.9;
+  right:calc(var(--w) * -0.05); bottom:calc(var(--w) * -0.05);
+  transform:rotate(180deg);
+}
+
+/* ---- heading ---- */
+/* capped so "Acara & Lokasi" stays on one line in the block's width — at the previous size it
+   wrapped to three lines and cost ~30px of height this slide can't spare */
+.title{
+  font-family:var(--serif); font-weight:500; text-transform:uppercase;
+  font-size:clamp(18px,3.05vh,29px); line-height:1.14; letter-spacing:.03em;
+  color:var(--ivory);
+}
+/* stroke-gallery.webp is a vertical rod (w/h 0.3333); a 90° turn reads it as a 3:1 horizontal rule */
+.ruleWrap{
+  --v:clamp(96px,22vw,150px);
+  width:var(--v); height:calc(var(--v) / 3);
+  overflow:hidden; position:relative; margin:clamp(3px,0.7vh,8px) auto; pointer-events:none;
+}
+.rule{
+  position:absolute; top:50%; left:50%;
+  width:calc(var(--v) / 3);
+  transform:translate(-50%,-50%) rotate(90deg);
+  display:block;
+}
+.intro{
+  font-family:var(--sans); font-size:clamp(9.5px,1.35vh,12.5px); line-height:1.6;
+  color:#e6e1cf; opacity:.88; margin-bottom:clamp(8px,1.4vh,15px);
+}
+
+/* ---- cards ---- */
+.cards{ display:flex; gap:clamp(7px,2vw,14px); align-items:stretch; }
+.card{
+  position:relative; flex:1 1 0; min-width:0;
+  background:linear-gradient(180deg,#fffdf7,#f7f0dd);
+  border:1px solid rgba(199,165,97,0.5); border-radius:10px;
+  /* top padding leaves room for the badge that straddles the top edge */
+  padding:clamp(14px,2.4vh,21px) clamp(6px,2vw,13px) clamp(8px,1.3vh,13px);
+  display:flex; flex-direction:column; align-items:center;
+}
+.cardWide{ margin-top:clamp(8px,1.6vh,16px); }
+
+.badge{
+  position:absolute; top:0; left:50%; transform:translate(-50%,-50%);
+  width:clamp(22px,4.2vh,30px); height:clamp(22px,4.2vh,30px); border-radius:50%;
+  background:linear-gradient(180deg,#fffdf7,#f6eeda);
+  border:1px solid rgba(199,165,97,0.55); color:var(--gold);
+  display:flex; align-items:center; justify-content:center;
+}
+.badge svg{ width:58%; height:58%; }
+
+.cardTitle{
+  font-family:var(--serif); font-weight:600; text-transform:uppercase;
+  font-size:clamp(11.5px,1.75vh,16px); letter-spacing:.08em; color:var(--sage-dark);
+  line-height:1.2;
+}
+/* small diamond under each card title */
+.cardDot{
+  display:block; width:5px; height:5px; margin:clamp(3px,0.6vh,7px) auto;
+  background:var(--gold); transform:rotate(45deg); opacity:.75;
+}
+
+.row, .venue{
+  display:flex; align-items:center; justify-content:center; gap:5px;
+  font-family:var(--sans); font-size:clamp(8.5px,1.2vh,11px); line-height:1.5;
+  color:#5f5238; margin-top:clamp(1px,0.4vh,4px);
+}
+.venue{ font-weight:500; color:var(--sage-dark); text-transform:uppercase; letter-spacing:.03em; }
+.rowIcon{ flex:none; width:clamp(9px,1.4vh,12px); height:clamp(9px,1.4vh,12px); color:var(--gold); }
+.rowIcon svg{ width:100%; height:100%; display:block; }
+
+.dashed{
+  display:block; width:78%; height:1px; margin:clamp(4px,0.9vh,9px) auto;
+  background-image:linear-gradient(90deg, rgba(199,165,97,0.65) 50%, transparent 50%);
+  background-size:5px 1px; background-repeat:repeat-x;
+}
+.address{
+  font-family:var(--sans); font-size:clamp(8px,1.1vh,10.5px); line-height:1.5;
+  color:#6d5c40; opacity:.9; margin-top:clamp(1px,0.3vh,4px);
+}
+
+.mapBtn{
+  display:inline-flex; align-items:center; justify-content:center; gap:5px;
+  margin-top:auto; padding-top:clamp(6px,1.2vh,12px);
+  font-family:var(--sans); font-size:clamp(7.5px,1.05vh,10px);
+  letter-spacing:.1em; text-transform:uppercase; color:var(--gold-deep,#a8823c);
+  text-decoration:none;
+}
+.mapBtnIcon{ flex:none; width:clamp(9px,1.3vh,12px); height:clamp(9px,1.3vh,12px); }
+.mapBtnIcon svg{ width:100%; height:100%; display:block; }
+
+/* ---- wide location card ---- */
+.wideRow{ display:flex; gap:clamp(8px,2.4vw,16px); align-items:center; width:100%; }
+.wideInfo{ flex:1 1 0; min-width:0; display:flex; flex-direction:column; align-items:center; }
+.mapWrap{
+  flex:1 1 0; min-width:0; display:block; overflow:hidden;
+  border:1px solid rgba(199,165,97,0.45); border-radius:8px;
+  aspect-ratio:1.28; background:#e9e4d6;
+}
+/* pointer-events:none keeps the map from capturing swipes meant for the deck */
+.map{ width:100%; height:100%; border:0; display:block; pointer-events:none; }
+
+/* ---- footer ---- */
+.heart{
+  display:block; width:clamp(11px,1.7vh,16px); margin:clamp(7px,1.4vh,14px) auto 0;
+  color:var(--gold-soft);
+}
+.heart svg{ width:100%; height:auto; display:block; }
+.closing{
+  font-family:var(--sans); font-size:clamp(8.5px,1.15vh,11px); line-height:1.55;
+  color:#e6e1cf; opacity:.85; margin-top:clamp(4px,0.8vh,9px);
+}
+
+@media (max-height:680px){
+  .intro{ line-height:1.45; margin-bottom:8px; }
+  .closing{ line-height:1.4; }
+  .address{ line-height:1.35; }
+  .card{ padding:13px 6px 8px; }
+  .dashed{ margin:4px auto; }
+  .row, .venue{ margin-top:1px; }
+  .heart{ margin-top:6px; }
+}
+
+/* smallest phones: pull the decoration in and step the type down so the cards keep the room */
+@media (max-height:600px){
+  .cornerTL, .cornerTR{ --w:min(34vw,150px); }
+  .cornerBL, .cornerBR{ --w:min(26vw,110px); }
+  .ruleWrap{ --v:62px; margin:1px auto; }
+  .block{ padding-bottom:4px; }
+  .title{ font-size:15px; }
+  .intro{ font-size:8.5px; line-height:1.4; margin-bottom:7px; }
+  .card{ padding:12px 6px 7px; }
+  .cardTitle{ font-size:9.5px; }
+  .row, .venue{ font-size:7.5px; margin-top:1px; }
+  .address{ font-size:7.5px; line-height:1.35; }
+  .mapBtn{ font-size:7px; padding-top:5px; }
+  .dashed{ margin:3px auto; }
+  .cardDot{ margin:2px auto; }
+  .closing{ font-size:8px; line-height:1.35; }
+  .heart{ margin-top:3px; }
+  /* the two event cards drop the street address here — it wraps to ~6 lines in a 104px column
+     and the Lokasi card directly below still carries it in full */
+  .card:not(.cardWide) .address{ display:none; }
+  /* dropping the pin frees enough width for the venue to sit on one line instead of two */
+  .card:not(.cardWide) .venue .rowIcon{ display:none; }
+  .cardWide .address{ font-size:7px; line-height:1.3; }
+  .intro{ font-size:8px; }
+  .closing{ font-size:7.5px; }
+  /* at this size the map is only ~92px wide — Google's embed chrome swamps it and it reads as
+     clutter rather than a map. The "Lihat di Google Maps" link still gets you there. */
+  .mapWrap{ display:none; }
 }
