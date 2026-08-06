@@ -134,10 +134,10 @@
    Sized explicitly rather than by opposing left/right insets — an <img> is a replaced element,
    so with width:auto it takes its intrinsic width (1536px here) and ignores `right` entirely. */
 .slotCenter .photo{
-  position:absolute; top:5%; left:6.5%;
-  width:87%;    /* 100 - 6.5 - 6.5 */
+  position:absolute; top:7%; left:4%;
+  width:92%;    /* 100 - 6.5 - 6.5 */
   height:88.5%; /* 100 - 5 - 6.5   */
-  border-radius:46% 46% 10px 10px / 14% 14% 10px 10px;
+  border-radius:46% 46% 10px 10px / 14% 14% 4px 4px;
   box-shadow:none;
 }
 /* the arched gold frame now bounds the slot, rather than overhanging it */
