@@ -120,8 +120,6 @@ export default function DetailsSlide({ className, innerClassName }: DetailsSlide
           <img className={styles.crownTop} src="/assets/crown-loct.webp" alt="" />
 
           <h2 className={styles.title}>
-            Info
-            <br />
             Acara &amp; Lokasi
           </h2>
 
@@ -151,7 +149,7 @@ export default function DetailsSlide({ className, innerClassName }: DetailsSlide
                   <span className={styles.rowIcon}>
                     <Icon name="clock" />
                   </span>
-                  08.00 WIB
+                  08.00 WIB &ndash; 10.00 WIB
                 </p>
                 <img className={styles.dateRule} src="/assets/date-loct.webp" alt="" />
                 <p className={styles.venue}>
@@ -180,7 +178,7 @@ export default function DetailsSlide({ className, innerClassName }: DetailsSlide
                   <span className={styles.rowIcon}>
                     <Icon name="clock" />
                   </span>
-                  11.00 WIB &ndash; Selesai
+                  11.00 WIB &ndash; 13.00 WIB
                 </p>
                 <img className={styles.dateRule} src="/assets/date-loct.webp" alt="" />
                 <p className={styles.venue}>
