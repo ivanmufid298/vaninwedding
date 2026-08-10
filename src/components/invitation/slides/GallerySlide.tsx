@@ -85,12 +85,13 @@ export default function GallerySlide({ className, innerClassName }: GallerySlide
               let off = i - idx;
               if (off > n / 2) off -= n;
               if (off < -n / 2) off += n;
+              // off-strip photos park on their own side so they slide in from the edge
               const cls =
                 off === 0
                   ? `${styles.slot} ${styles.slotCenter}`
                   : Math.abs(off) === 1
                     ? `${styles.slot} ${off < 0 ? styles.slotLeft : styles.slotRight}`
-                    : `${styles.slot} ${styles.slotHidden}`;
+                    : `${styles.slot} ${off < 0 ? styles.slotHiddenLeft : styles.slotHiddenRight}`;
               return (
                 <div className={cls} key={src}>
                   <img className={styles.photo} src={src} alt="" />

@@ -60,7 +60,9 @@
 .crownTop, .crownBottom{ display:block; margin-left:auto; margin-right:auto; pointer-events:none; }
 /* crown-loct.webp: 2004x785, pad 25.61% top / 36.94% bottom, so height = 0.3917 × width */
 .crownTop{
-  --cw:clamp(120px,32vw,200px); width:var(--cw);
+  /* matched to .footerBottom so the ornament closing the slide and the one opening it read
+     at the same weight */
+  --cw:clamp(130px,48vw,260px); width:var(--cw);
   margin-top:calc(var(--cw) * -0.1003);
   margin-bottom:calc(var(--cw) * -0.1447 + clamp(2px,0.5vh,6px));
 }
@@ -321,7 +323,7 @@
 @media (max-height:600px){
   .cornerTL, .cornerTR{ --w:min(34vw,150px); }
   .cornerBL, .cornerBR{ --w:min(38vw,165px); }
-  .crownTop{ --cw:105px; }
+  .crownTop{ --cw:130px; }
   .crownBottom{ --cw:115px; }
   .block{ padding-bottom:4px; }
   .title{ font-size:14px; }

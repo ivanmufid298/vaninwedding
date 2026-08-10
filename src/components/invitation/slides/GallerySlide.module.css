@@ -42,7 +42,7 @@
 /* ---- ornaments clipped to their artwork so spacing is predictable ---- */
 /* crown-gallery: artwork 84.6% wide, 6.567:1 … actually 2.362:1 */
 .crownWrap{
-  --v:clamp(64px,13vw,104px);
+  --v:clamp(92px,23vw,148px);
   width:var(--v); height:calc(var(--v) / 2.362);
   overflow:hidden; display:flex; align-items:center; justify-content:center;
   margin:0 auto clamp(4px,0.8vh,9px); pointer-events:none;
@@ -109,21 +109,37 @@
    track on short screens is then just a width change, and every inner percentage stays true;
    setting height alone would have squashed the frame out of proportion. */
 .carousel{
-  position:relative; width:100%; aspect-ratio:1.675; margin:0 auto;
+  position:relative;
+  /* deliberately wider than the text block — at the block's width the slide read half-empty.
+     The side photos are decoration, so the fixed music toggle floating over the far edge is
+     acceptable; the featured photo and the arrows both stay clear of it. */
+  --bleed:clamp(10px,5vw,34px);
+  width:calc(100% + 2 * var(--bleed));
+  margin-left:calc(-1 * var(--bleed)); margin-right:calc(-1 * var(--bleed));
+  /* frame-gallery.webp is 1178x1335, i.e. 0.882 wide per tall, and the centre slot is 58% of
+     this box's width — so 0.58 x aspect-ratio has to equal 0.882 or the arch comes out
+     stretched. 0.882 / 0.58 = 1.521. Lowering the ratio (rather than only widening) is what
+     buys the extra height. */
+  aspect-ratio:1.521;
   overflow:hidden;
 }
 .slot{
   position:absolute; top:50%; transform:translateY(-50%);
-  transition:left .5s cubic-bezier(.4,0,.2,1), width .5s cubic-bezier(.4,0,.2,1),
-             height .5s cubic-bezier(.4,0,.2,1), opacity .5s ease;
+  transition:left .55s cubic-bezier(.33,1,.68,1), width .55s cubic-bezier(.33,1,.68,1),
+             height .55s cubic-bezier(.33,1,.68,1), opacity .42s ease;
 }
-.slotCenter{ left:24%; width:52%; height:100%; z-index:3; opacity:1; }
-.slotLeft{ left:0; width:22%; height:84%; z-index:2; opacity:1; }
-.slotRight{ left:78%; width:22%; height:84%; z-index:2; opacity:1; }
-.slotHidden{ left:39%; width:22%; height:70%; z-index:1; opacity:0; }
+.slotCenter{ left:21%; width:58%; height:100%; z-index:3; opacity:1; }
+.slotLeft{ left:0; width:20%; height:78%; z-index:2; opacity:1; }
+.slotRight{ left:80%; width:20%; height:78%; z-index:2; opacity:1; }
+/* Off-strip photos wait just outside the frame on their own side, so they slide in from the
+   edge. Parking them all in the middle (the old single .slotHidden) made an incoming photo
+   appear out of thin air behind the featured one instead of travelling in. */
+.slotHiddenLeft{ left:-22%; width:20%; height:70%; z-index:1; opacity:0; }
+.slotHiddenRight{ left:102%; width:20%; height:70%; z-index:1; opacity:0; }
 
 .photo{
   width:100%; height:100%; object-fit:cover; display:block;
+  transition:filter .45s ease;
   background:linear-gradient(180deg,#f3ead6,#e6dcc4);
   /* generously rounded so the neighbours read as soft cards, not sharp corners */
   border-radius:clamp(8px,3.4vw,20px);
@@ -140,6 +156,10 @@
   border-radius:46% 46% 10px 10px / 14% 14% 4px 4px;
   box-shadow:none;
 }
+/* the neighbours sit back: dimmed so the eye lands on the featured photo */
+.slotLeft .photo, .slotRight .photo,
+.slotHiddenLeft .photo, .slotHiddenRight .photo{ filter:brightness(.66) saturate(.88); }
+
 /* the arched gold frame now bounds the slot, rather than overhanging it */
 .photoFrame{
   position:absolute; inset:0; width:100%; height:100%;
@@ -156,8 +176,8 @@
 }
 /* inset over the side photos rather than flush to the edge, so the left arrow doesn't
    sit shoulder-to-shoulder with the fixed music toggle */
-.arrowPrev{ left:6%; }
-.arrowNext{ right:6%; }
+.arrowPrev{ left:11%; }
+.arrowNext{ right:11%; }
 .arrow svg{ width:9px; height:15px; }
 
 .dots{ display:flex; justify-content:center; gap:7px; margin:clamp(6px,1.2vh,13px) 0; }
@@ -228,10 +248,13 @@
 
 /* smallest phones: shrink the carousel so the last line stays clear of the fixed scroll cue */
 @media (max-height:600px){
-  .carousel{ width:88%; }
+  /* drop the bleed rather than setting a width: width and the side margins are both derived
+     from --bleed, and overriding width alone left the negative margins in place, which pushed
+     the strip off-centre */
+  .carousel{ --bleed:0px; }
   .title{ font-size:21px; }
   .dots{ margin:3px 0; }
-  .crownWrap{ --v:clamp(54px,11vw,80px); }
+  .crownWrap{ --v:clamp(74px,16vw,104px); }
   .strokeWrapH{ --v:64px; margin:3px auto; }
   .strokeWrapHLg{ --v:88px; }
   .couple{ --ruleW:18px; }
