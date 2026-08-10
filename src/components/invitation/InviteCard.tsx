@@ -2,8 +2,8 @@
 
 /* eslint-disable @next/next/no-img-element */
 
-import { useSearchParams } from "next/navigation";
 import type { KeyboardEvent, MouseEvent } from "react";
+import { useGuest } from "./GuestContext";
 import styles from "./InviteCard.module.css";
 
 interface InviteCardProps {
@@ -17,11 +17,12 @@ export default function InviteCard({
   leaving,
   onContinue,
 }: InviteCardProps) {
-  const searchParams = useSearchParams();
-  const guestName = searchParams.get("to")?.trim();
-  const isNotInvited = guestName?.toLowerCase() === "not-invited";
-  const displayName =
-    guestName && guestName.length > 0 ? guestName : "Bapak/Ibu/Saudara/i";
+  const { status, displayName } = useGuest();
+  // only a definitive "not on the guest list" closes the door. A network failure ("error") is
+  // not proof of anything, so those guests are let through — the RSVP form still holds back.
+  const isNotInvited = status === "invalid";
+  const isChecking = status === "checking";
+  const blocked = isNotInvited || isChecking;
 
   function handleDownloadClick(e: MouseEvent) {
     e.preventDefault();
@@ -32,12 +33,12 @@ export default function InviteCard({
   }
 
   function handleContainerClick() {
-    if (isNotInvited) return;
+    if (blocked) return;
     onContinue();
   }
 
   function handleKeyDown(e: KeyboardEvent) {
-    if (isNotInvited) return;
+    if (blocked) return;
     if (e.key === "Enter" || e.key === " ") {
       e.preventDefault();
       onContinue();
@@ -47,9 +48,9 @@ export default function InviteCard({
   return (
     <div
       className={`${styles.overlay}${shown ? ` ${styles.shown}` : ""}${leaving ? ` ${styles.leaving}` : ""}`}
-      role={isNotInvited ? undefined : "button"}
-      tabIndex={isNotInvited ? -1 : shown ? 0 : -1}
-      aria-label={isNotInvited ? undefined : "Lanjutkan ke undangan"}
+      role={blocked ? undefined : "button"}
+      tabIndex={blocked ? -1 : shown ? 0 : -1}
+      aria-label={blocked ? undefined : "Lanjutkan ke undangan"}
       onClick={handleContainerClick}
       onKeyDown={handleKeyDown}
     >
@@ -87,7 +88,12 @@ export default function InviteCard({
           {/* decorative border; sits behind cardBody so it never covers the text */}
           <div className={styles.frame} aria-hidden="true" />
           <div className={styles.cardBody}>
-            {isNotInvited ? (
+            {isChecking ? (
+              <>
+                <div className={styles.eyebrow}>Mohon Tunggu</div>
+                <div className={styles.guestName}>Memuat undangan…</div>
+              </>
+            ) : isNotInvited ? (
               <>
                 <div className={styles.eyebrow}>Sorry</div>
                 <div className={styles.guestName}>You&apos;re Not Invited</div>
@@ -244,7 +250,7 @@ export default function InviteCard({
           </div>
         </div>
         {/* outside the card: inside it, this line ran across the frame's bottom-right floral */}
-        {!isNotInvited && (
+        {!blocked && (
           <div className={styles.continueHint}>
             Ketuk di mana saja untuk melanjutkan
           </div>

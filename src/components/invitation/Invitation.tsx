@@ -2,12 +2,13 @@
 
 import { useCallback, useEffect, useRef, useState, type MouseEvent } from "react";
 import { FloralClickProvider, type FloralClickHandler } from "./FloralClickContext";
+import { GuestProvider } from "./GuestContext";
 import Preloader from "./Preloader";
 import IntroLabel from "./IntroLabel";
 import Envelope from "./Envelope";
 import InviteCard from "./InviteCard";
 import Curtain from "./Curtain";
-import Deck, { type Countdown } from "./Deck";
+import Deck from "./Deck";
 import ScrollCue from "./ScrollCue";
 import Dots from "./Dots";
 import MusicToggle from "./MusicToggle";
@@ -15,7 +16,6 @@ import PetalLayer, { type Petal } from "./PetalLayer";
 
 const TOTAL_SLIDES = 6;
 const PETAL_COLORS = ["#8fa178", "#fffdf8", "#5f6f4c", "#e3cd9a", "#e7b9c2"];
-const WEDDING_TARGET = new Date("2026-08-30T10:30:00+07:00").getTime();
 // the envelope screen is the first thing shown after the preloader, so its florals are
 // preloaded here to stop them popping in
 const PRELOAD_ASSETS = [
@@ -23,15 +23,8 @@ const PRELOAD_ASSETS = [
   "/assets/top-left3.webp",
   "/assets/top-right2.webp",
   "/assets/flower-decor2.webp",
-  "/assets/cluster.webp",
-  "/assets/cluster_small.webp",
-  "/assets/flower-vase.webp",
 ];
 const MIN_PRELOAD_DURATION = 1200;
-
-function pad(n: number) {
-  return String(n).padStart(2, "0");
-}
 
 export default function Invitation() {
   const [current, setCurrent] = useState(0);
@@ -57,13 +50,6 @@ export default function Invitation() {
   const [musicOn, setMusicOn] = useState(false);
 
   const [introReady, setIntroReady] = useState(false);
-
-  const [countdown, setCountdown] = useState<Countdown>({
-    days: "00",
-    hours: "00",
-    mins: "00",
-    secs: "00",
-  });
 
   const goTo = useCallback((idx: number) => {
     if (!deckReadyRef.current || busyRef.current) return;
@@ -197,21 +183,6 @@ export default function Invitation() {
   );
 
   useEffect(() => {
-    const tick = () => {
-      const diff = Math.max(0, WEDDING_TARGET - Date.now());
-      setCountdown({
-        days: pad(Math.floor(diff / 86400000)),
-        hours: pad(Math.floor((diff % 86400000) / 3600000)),
-        mins: pad(Math.floor((diff % 3600000) / 60000)),
-        secs: pad(Math.floor((diff % 60000) / 1000)),
-      });
-    };
-    tick();
-    const id = setInterval(tick, 1000);
-    return () => clearInterval(id);
-  }, []);
-
-  useEffect(() => {
     let wheelLock = 0;
     let touchY: number | null = null;
 
@@ -282,14 +253,15 @@ export default function Invitation() {
   };
 
   return (
-    <FloralClickProvider value={handleFloralClick}>
+    <GuestProvider>
+      <FloralClickProvider value={handleFloralClick}>
       <Preloader hidden={introReady} />
       {/* fades as soon as the envelope is tapped, clearing the space the letter slides up into */}
       <IntroLabel phase={introReady ? "envelope" : "preload"} visible={!envelopeOpen} />
       <Envelope open={envelopeOpen} hidden={envelopeHidden} onOpen={openEnvelope} />
       <InviteCard shown={inviteShown} leaving={inviteLeaving} onContinue={handleContinue} />
       <Curtain open={curtainOpen} gone={curtainGone} />
-      <Deck current={current} countdown={countdown} onRsvpClick={handleRsvpClick} />
+      <Deck current={current} onRsvpClick={handleRsvpClick} />
       <ScrollCue current={current} total={TOTAL_SLIDES} />
       <Dots total={TOTAL_SLIDES} current={current} show={dotsShow} onSelect={goTo} />
       <MusicToggle playing={musicOn} show={dotsShow} onToggle={toggleMusic} />
@@ -305,6 +277,7 @@ export default function Invitation() {
         onPlay={() => setMusicOn(true)}
         onPause={() => setMusicOn(false)}
       />
-    </FloralClickProvider>
+      </FloralClickProvider>
+    </GuestProvider>
   );
 }

@@ -6,25 +6,17 @@ import HeroSlide from "./slides/HeroSlide";
 import QuoteSlide from "./slides/QuoteSlide";
 import GallerySlide from "./slides/GallerySlide";
 import DetailsSlide from "./slides/DetailsSlide";
-import CountdownSlide from "./slides/CountdownSlide";
+import RsvpSlide from "./slides/RsvpSlide";
 import ClosingSlide from "./slides/ClosingSlide";
-
-export interface Countdown {
-  days: string;
-  hours: string;
-  mins: string;
-  secs: string;
-}
 
 interface DeckProps {
   current: number;
-  countdown: Countdown;
   onRsvpClick: (e: MouseEvent) => void;
 }
 
-const BACKGROUNDS = ["hero", "quote", "gallery", "details", "count", "closing"] as const;
+const BACKGROUNDS = ["hero", "quote", "gallery", "details", "rsvp", "closing"] as const;
 
-export default function Deck({ current, countdown, onRsvpClick }: DeckProps) {
+export default function Deck({ current, onRsvpClick }: DeckProps) {
   function sectionClassName(i: number) {
     const parts: string[] = [styles.slide, styles[BACKGROUNDS[i]]];
     if (i === current) parts.push(styles.active);
@@ -38,11 +30,7 @@ export default function Deck({ current, countdown, onRsvpClick }: DeckProps) {
       <QuoteSlide className={sectionClassName(1)} innerClassName={styles.slideInner} />
       <GallerySlide className={sectionClassName(2)} innerClassName={styles.slideInner} />
       <DetailsSlide className={sectionClassName(3)} innerClassName={styles.slideInner} />
-      <CountdownSlide
-        className={sectionClassName(4)}
-        innerClassName={styles.slideInner}
-        countdown={countdown}
-      />
+      <RsvpSlide className={sectionClassName(4)} innerClassName={styles.slideInner} />
       <ClosingSlide
         className={sectionClassName(5)}
         innerClassName={styles.slideInner}

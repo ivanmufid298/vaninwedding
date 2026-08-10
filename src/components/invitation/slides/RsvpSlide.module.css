@@ -1,0 +1,318 @@
+/* RSVP slide. Cream page, gilded double-line frame, form fields.
+   Sizing is in vh/clamp so the whole form fits the viewport without scrolling — the slide is
+   overflow:hidden like the rest of the deck. Ornament offsets come from each asset's measured
+   alpha box rather than eyeballed values. */
+
+.rsvpSection{ color:#4a4230; }
+
+/* ---- the page frame: two gold hairlines with concave ("cekung") corners, same construction as
+   the event cards on the details slide. Both lines have to be hollow rings here (unlike the
+   cards, where the inner line was the edge of a filled slab) because the page shows through
+   between and inside them. Outer contour clockwise + inner contour counter-clockwise makes the
+   nonzero fill rule cancel in the middle, leaving a genuine 1px stroke. */
+.frame{ position:absolute; inset:clamp(9px,2.2vw,16px); pointer-events:none; z-index:0; }
+.frame::before, .frame::after{ content:""; position:absolute; }
+/* --fgap is the distance between the two lines; the inner radius is derived from it rather
+   than picked by eye, otherwise the pair pinches together at each concave corner. */
+.frame{ --fo:clamp(12px,3vw,20px); --fgap:clamp(4px,1vw,7px); }
+.frame::before{ --so:var(--fo); inset:0; }
+.frame::after{ --so:calc(var(--fo) - 0.4142 * var(--fgap)); inset:var(--fgap); }
+.frame::before, .frame::after{
+  background:#bd8f45;
+  clip-path:polygon(
+    0px calc(0px + 1*var(--so)), calc(0px + 0.38268*var(--so)) calc(0px + 0.92388*var(--so)),
+    calc(0px + 0.70711*var(--so)) calc(0px + 0.70711*var(--so)),
+    calc(0px + 0.92388*var(--so)) calc(0px + 0.38268*var(--so)), calc(0px + 1*var(--so)) 0px,
+    calc(100% - 0px - 1*var(--so)) 0px,
+    calc(100% - 0px - 0.92388*var(--so)) calc(0px + 0.38268*var(--so)),
+    calc(100% - 0px - 0.70711*var(--so)) calc(0px + 0.70711*var(--so)),
+    calc(100% - 0px - 0.38268*var(--so)) calc(0px + 0.92388*var(--so)),
+    calc(100% - 0px) calc(0px + 1*var(--so)), calc(100% - 0px) calc(100% - 0px - 1*var(--so)),
+    calc(100% - 0px - 0.38268*var(--so)) calc(100% - 0px - 0.92388*var(--so)),
+    calc(100% - 0px - 0.70711*var(--so)) calc(100% - 0px - 0.70711*var(--so)),
+    calc(100% - 0px - 0.92388*var(--so)) calc(100% - 0px - 0.38268*var(--so)),
+    calc(100% - 0px - 1*var(--so)) calc(100% - 0px), calc(0px + 1*var(--so)) calc(100% - 0px),
+    calc(0px + 0.92388*var(--so)) calc(100% - 0px - 0.38268*var(--so)),
+    calc(0px + 0.70711*var(--so)) calc(100% - 0px - 0.70711*var(--so)),
+    calc(0px + 0.38268*var(--so)) calc(100% - 0px - 0.92388*var(--so)),
+    0px calc(100% - 0px - 1*var(--so)), 0px calc(0px + 1*var(--so)),
+    1px calc(100% - 1px - 1*calc(var(--so) - 0.41px)),
+    calc(1px + 0.38268*calc(var(--so) - 0.41px)) calc(100% - 1px - 0.92388*calc(var(--so) - 0.41px)),
+    calc(1px + 0.70711*calc(var(--so) - 0.41px)) calc(100% - 1px - 0.70711*calc(var(--so) - 0.41px)),
+    calc(1px + 0.92388*calc(var(--so) - 0.41px)) calc(100% - 1px - 0.38268*calc(var(--so) - 0.41px)),
+    calc(1px + 1*calc(var(--so) - 0.41px)) calc(100% - 1px),
+    calc(100% - 1px - 1*calc(var(--so) - 0.41px)) calc(100% - 1px),
+    calc(100% - 1px - 0.92388*calc(var(--so) - 0.41px)) calc(100% - 1px - 0.38268*calc(var(--so) - 0.41px)),
+    calc(100% - 1px - 0.70711*calc(var(--so) - 0.41px)) calc(100% - 1px - 0.70711*calc(var(--so) - 0.41px)),
+    calc(100% - 1px - 0.38268*calc(var(--so) - 0.41px)) calc(100% - 1px - 0.92388*calc(var(--so) - 0.41px)),
+    calc(100% - 1px) calc(100% - 1px - 1*calc(var(--so) - 0.41px)),
+    calc(100% - 1px) calc(1px + 1*calc(var(--so) - 0.41px)),
+    calc(100% - 1px - 0.38268*calc(var(--so) - 0.41px)) calc(1px + 0.92388*calc(var(--so) - 0.41px)),
+    calc(100% - 1px - 0.70711*calc(var(--so) - 0.41px)) calc(1px + 0.70711*calc(var(--so) - 0.41px)),
+    calc(100% - 1px - 0.92388*calc(var(--so) - 0.41px)) calc(1px + 0.38268*calc(var(--so) - 0.41px)),
+    calc(100% - 1px - 1*calc(var(--so) - 0.41px)) 1px, calc(1px + 1*calc(var(--so) - 0.41px)) 1px,
+    calc(1px + 0.92388*calc(var(--so) - 0.41px)) calc(1px + 0.38268*calc(var(--so) - 0.41px)),
+    calc(1px + 0.70711*calc(var(--so) - 0.41px)) calc(1px + 0.70711*calc(var(--so) - 0.41px)),
+    calc(1px + 0.38268*calc(var(--so) - 0.41px)) calc(1px + 0.92388*calc(var(--so) - 0.41px)),
+    1px calc(1px + 1*calc(var(--so) - 0.41px)), 1px calc(100% - 1px - 1*calc(var(--so) - 0.41px)));
+}
+
+/* ---- corner ornaments ---- */
+.corner{ position:absolute; z-index:1; pointer-events:none; }
+/* top-rsvp.webp: mass sits at 25.7% across, i.e. drawn as a top-LEFT piece; art is flush to its
+   left/top edges (0.3%) so it needs no outward bleed */
+.cornerTL{
+  --w:min(62vw,300px); width:var(--w);
+  left:calc(var(--w) * -0.02); top:calc(var(--w) * -0.02);
+  pointer-events:auto; cursor:pointer;
+}
+/* bot-left-rsvp.webp: pads 7.8% left / 1.1% bottom */
+.cornerBL{
+  --w:min(50vw,240px); width:var(--w);
+  left:calc(var(--w) * -0.07); bottom:calc(var(--w) * -0.01);
+}
+/* bot-right-rsvp.webp: pads 1.65% right / 2.2% bottom */
+.cornerBR{
+  --w:min(56vw,270px); width:var(--w);
+  right:calc(var(--w) * -0.016); bottom:calc(var(--w) * -0.02);
+}
+
+/* ---- header ---- */
+.block{
+  position:relative; z-index:2;
+  max-width:min(300px, calc(100vw - 92px)); margin:0 auto; text-align:center;
+}
+/* crown-rsvp.webp: 1475x1067 (h = 0.7234 x width), pads 5.44% top / 9.37% bottom — the negative
+   margins collapse that transparent padding so the gaps below are the ones actually written */
+.crown{
+  --cw:clamp(64px,17vw,104px);
+  display:block; width:var(--cw); margin-left:auto; margin-right:auto;
+  margin-top:calc(var(--cw) * -0.0394);
+  margin-bottom:calc(var(--cw) * -0.0678 + clamp(2px,0.5vh,6px));
+}
+.title{
+  font-family:var(--serif); font-weight:500; text-transform:uppercase;
+  font-size:clamp(26px,5.4vh,44px); line-height:1.05; letter-spacing:.16em;
+  color:var(--sage-dark); margin-top:clamp(2px,0.5vh,6px);
+}
+/* stroke-rsvp.webp: 2187x719 (h = 0.3288 x width), pads 30.46% top / 32.96% bottom */
+.rule{
+  display:block; width:clamp(120px,42vw,215px); margin:0 auto;
+  margin-top:calc(clamp(120px,42vw,215px) * -0.1002 + clamp(2px,0.6vh,7px));
+  margin-bottom:calc(clamp(120px,42vw,215px) * -0.1084 + clamp(4px,1vh,11px));
+}
+.intro{
+  font-family:var(--sans); font-size:clamp(8.5px,1.25vh,11.5px); line-height:1.6;
+  color:#5f5238; opacity:.92;
+}
+.sub{
+  font-family:var(--sans); font-size:clamp(8.5px,1.25vh,11.5px); line-height:1.6;
+  color:#5f5238; opacity:.92; margin-top:clamp(6px,1.3vh,14px);
+}
+
+/* ---- date plaque: date-rsvp.webp is a hollow frame, so the text just sits inside it.
+   Measured: the rounded-rect interior runs y 26.9%-62.3% of the image, centred at 44.6%. */
+.datePlate{
+  position:relative; width:clamp(150px,52vw,250px); margin:clamp(4px,0.9vh,10px) auto 0;
+}
+.datePlate img{ display:block; width:100%; }
+.dateText{
+  position:absolute; left:50%; top:44.6%; transform:translate(-50%,-50%);
+  font-family:var(--serif); letter-spacing:.14em; white-space:nowrap;
+  font-size:clamp(9px,1.5vh,13px); color:var(--sage-dark);
+}
+
+/* ---- form ---- */
+.fieldLabel{
+  font-family:var(--sans); font-size:clamp(9px,1.35vh,12px); color:#5f5238;
+  margin-top:clamp(8px,1.7vh,17px); margin-bottom:clamp(3px,0.7vh,7px);
+}
+/* no boxed field — the name sits on a rule, like a written-in line on a paper invitation */
+.nameWrap{
+  display:block; max-width:80%;
+  margin: auto;
+  padding-bottom:clamp(3px,0.7vh,7px);
+  border-bottom:1px solid rgba(189,143,69,0.55);
+}
+/* filled from ?to=, never typed, so this is text rather than an input. Alex Brush is a script
+   face with deep descenders, hence the padding-bottom on the rule above. */
+.nameValue{
+  display:block; font-family:var(--script);
+  font-size:clamp(19px,3.2vh,29px); line-height:1.2; color:var(--sage-dark);
+  /* wraps rather than ellipsing: a long guest name should read in full, and truncating
+     someone's name on their own invitation is worse than letting it run to two lines */
+  overflow-wrap:break-word;
+}
+
+/* stepper */
+.stepper{
+  display:inline-flex; align-items:center; gap:clamp(10px,3vw,20px);
+  padding:clamp(3px,0.6vh,6px) clamp(8px,2.2vw,14px);
+  border:1px solid rgba(189,143,69,0.5); border-radius:999px;
+  background:rgba(255,255,255,0.5);
+}
+.stepBtn{
+  border:0; background:transparent; cursor:pointer; color:#bd8f45; line-height:1;
+  font-size:clamp(13px,2vh,18px); padding:2px 4px;
+}
+.stepBtn:disabled{ opacity:.35; cursor:default; }
+/* sans, not the display serif: Cormorant's "1" is a bare stroke that reads as a capital I */
+.stepVal{
+  font-family:var(--sans); font-size:clamp(11px,1.7vh,15px); color:var(--sage-dark);
+  min-width:1.4em;
+}
+
+/* ---- the two attendance buttons: same double-line concave frame as the event cards ---- */
+.choices{ display:flex; gap:clamp(7px,2vw,13px); justify-content:center; }
+.choice{
+  --sc:7px; --fg:3px; --so:calc(var(--sc) + 0.4142 * var(--fg));
+  position:relative; flex:1 1 0; min-width:0; padding:var(--fg);
+  border:0; background:transparent; cursor:pointer; font:inherit;
+  transition:transform .18s ease;
+  -webkit-tap-highlight-color:transparent;
+}
+.choice:active:not(:disabled){ transform:scale(0.965); }
+.choice::before{
+  content:""; position:absolute; inset:0; pointer-events:none; background:#bd8f45;
+  clip-path:polygon(
+    0px calc(0px + 1*var(--so)), calc(0px + 0.38268*var(--so)) calc(0px + 0.92388*var(--so)),
+    calc(0px + 0.70711*var(--so)) calc(0px + 0.70711*var(--so)),
+    calc(0px + 0.92388*var(--so)) calc(0px + 0.38268*var(--so)), calc(0px + 1*var(--so)) 0px,
+    calc(100% - 0px - 1*var(--so)) 0px,
+    calc(100% - 0px - 0.92388*var(--so)) calc(0px + 0.38268*var(--so)),
+    calc(100% - 0px - 0.70711*var(--so)) calc(0px + 0.70711*var(--so)),
+    calc(100% - 0px - 0.38268*var(--so)) calc(0px + 0.92388*var(--so)),
+    calc(100% - 0px) calc(0px + 1*var(--so)), calc(100% - 0px) calc(100% - 0px - 1*var(--so)),
+    calc(100% - 0px - 0.38268*var(--so)) calc(100% - 0px - 0.92388*var(--so)),
+    calc(100% - 0px - 0.70711*var(--so)) calc(100% - 0px - 0.70711*var(--so)),
+    calc(100% - 0px - 0.92388*var(--so)) calc(100% - 0px - 0.38268*var(--so)),
+    calc(100% - 0px - 1*var(--so)) calc(100% - 0px), calc(0px + 1*var(--so)) calc(100% - 0px),
+    calc(0px + 0.92388*var(--so)) calc(100% - 0px - 0.38268*var(--so)),
+    calc(0px + 0.70711*var(--so)) calc(100% - 0px - 0.70711*var(--so)),
+    calc(0px + 0.38268*var(--so)) calc(100% - 0px - 0.92388*var(--so)),
+    0px calc(100% - 0px - 1*var(--so)), 0px calc(0px + 1*var(--so)),
+    1px calc(100% - 1px - 1*calc(var(--so) - 0.41px)),
+    calc(1px + 0.38268*calc(var(--so) - 0.41px)) calc(100% - 1px - 0.92388*calc(var(--so) - 0.41px)),
+    calc(1px + 0.70711*calc(var(--so) - 0.41px)) calc(100% - 1px - 0.70711*calc(var(--so) - 0.41px)),
+    calc(1px + 0.92388*calc(var(--so) - 0.41px)) calc(100% - 1px - 0.38268*calc(var(--so) - 0.41px)),
+    calc(1px + 1*calc(var(--so) - 0.41px)) calc(100% - 1px),
+    calc(100% - 1px - 1*calc(var(--so) - 0.41px)) calc(100% - 1px),
+    calc(100% - 1px - 0.92388*calc(var(--so) - 0.41px)) calc(100% - 1px - 0.38268*calc(var(--so) - 0.41px)),
+    calc(100% - 1px - 0.70711*calc(var(--so) - 0.41px)) calc(100% - 1px - 0.70711*calc(var(--so) - 0.41px)),
+    calc(100% - 1px - 0.38268*calc(var(--so) - 0.41px)) calc(100% - 1px - 0.92388*calc(var(--so) - 0.41px)),
+    calc(100% - 1px) calc(100% - 1px - 1*calc(var(--so) - 0.41px)),
+    calc(100% - 1px) calc(1px + 1*calc(var(--so) - 0.41px)),
+    calc(100% - 1px - 0.38268*calc(var(--so) - 0.41px)) calc(1px + 0.92388*calc(var(--so) - 0.41px)),
+    calc(100% - 1px - 0.70711*calc(var(--so) - 0.41px)) calc(1px + 0.70711*calc(var(--so) - 0.41px)),
+    calc(100% - 1px - 0.92388*calc(var(--so) - 0.41px)) calc(1px + 0.38268*calc(var(--so) - 0.41px)),
+    calc(100% - 1px - 1*calc(var(--so) - 0.41px)) 1px, calc(1px + 1*calc(var(--so) - 0.41px)) 1px,
+    calc(1px + 0.92388*calc(var(--so) - 0.41px)) calc(1px + 0.38268*calc(var(--so) - 0.41px)),
+    calc(1px + 0.70711*calc(var(--so) - 0.41px)) calc(1px + 0.70711*calc(var(--so) - 0.41px)),
+    calc(1px + 0.38268*calc(var(--so) - 0.41px)) calc(1px + 0.92388*calc(var(--so) - 0.41px)),
+    1px calc(1px + 1*calc(var(--so) - 0.41px)), 1px calc(100% - 1px - 1*calc(var(--so) - 0.41px)));
+}
+/* gold slab whose edge reads as the inner hairline; z-index:0 so the fill can sit behind the
+   label at z-index:-1 */
+.choiceInner{
+  position:relative; z-index:0; display:flex; align-items:center; justify-content:center; gap:5px;
+  background:#bd8f45;
+  padding:clamp(6px,1.1vh,10px) clamp(4px,1.4vw,9px);
+  font-family:var(--sans); font-size:clamp(8px,1.2vh,11px); color:#6a5c3f;
+  clip-path:polygon(
+    0px calc(0px + 1*var(--sc)), calc(0px + 0.38268*var(--sc)) calc(0px + 0.92388*var(--sc)),
+    calc(0px + 0.70711*var(--sc)) calc(0px + 0.70711*var(--sc)),
+    calc(0px + 0.92388*var(--sc)) calc(0px + 0.38268*var(--sc)), calc(0px + 1*var(--sc)) 0px,
+    calc(100% - 0px - 1*var(--sc)) 0px,
+    calc(100% - 0px - 0.92388*var(--sc)) calc(0px + 0.38268*var(--sc)),
+    calc(100% - 0px - 0.70711*var(--sc)) calc(0px + 0.70711*var(--sc)),
+    calc(100% - 0px - 0.38268*var(--sc)) calc(0px + 0.92388*var(--sc)),
+    calc(100% - 0px) calc(0px + 1*var(--sc)), calc(100% - 0px) calc(100% - 0px - 1*var(--sc)),
+    calc(100% - 0px - 0.38268*var(--sc)) calc(100% - 0px - 0.92388*var(--sc)),
+    calc(100% - 0px - 0.70711*var(--sc)) calc(100% - 0px - 0.70711*var(--sc)),
+    calc(100% - 0px - 0.92388*var(--sc)) calc(100% - 0px - 0.38268*var(--sc)),
+    calc(100% - 0px - 1*var(--sc)) calc(100% - 0px), calc(0px + 1*var(--sc)) calc(100% - 0px),
+    calc(0px + 0.92388*var(--sc)) calc(100% - 0px - 0.38268*var(--sc)),
+    calc(0px + 0.70711*var(--sc)) calc(100% - 0px - 0.70711*var(--sc)),
+    calc(0px + 0.38268*var(--sc)) calc(100% - 0px - 0.92388*var(--sc)),
+    0px calc(100% - 0px - 1*var(--sc)));
+}
+.choiceInner{ transition:color .22s ease, font-weight .22s ease; }
+.choiceInner::before{
+  content:""; position:absolute; inset:1px; z-index:-1; background:#fdf8ec;
+  transition:background .28s ease;
+  clip-path:polygon(
+    0px calc(0px + 1*calc(var(--sc) - 0.41px)),
+    calc(0px + 0.38268*calc(var(--sc) - 0.41px)) calc(0px + 0.92388*calc(var(--sc) - 0.41px)),
+    calc(0px + 0.70711*calc(var(--sc) - 0.41px)) calc(0px + 0.70711*calc(var(--sc) - 0.41px)),
+    calc(0px + 0.92388*calc(var(--sc) - 0.41px)) calc(0px + 0.38268*calc(var(--sc) - 0.41px)),
+    calc(0px + 1*calc(var(--sc) - 0.41px)) 0px, calc(100% - 0px - 1*calc(var(--sc) - 0.41px)) 0px,
+    calc(100% - 0px - 0.92388*calc(var(--sc) - 0.41px)) calc(0px + 0.38268*calc(var(--sc) - 0.41px)),
+    calc(100% - 0px - 0.70711*calc(var(--sc) - 0.41px)) calc(0px + 0.70711*calc(var(--sc) - 0.41px)),
+    calc(100% - 0px - 0.38268*calc(var(--sc) - 0.41px)) calc(0px + 0.92388*calc(var(--sc) - 0.41px)),
+    calc(100% - 0px) calc(0px + 1*calc(var(--sc) - 0.41px)),
+    calc(100% - 0px) calc(100% - 0px - 1*calc(var(--sc) - 0.41px)),
+    calc(100% - 0px - 0.38268*calc(var(--sc) - 0.41px)) calc(100% - 0px - 0.92388*calc(var(--sc) - 0.41px)),
+    calc(100% - 0px - 0.70711*calc(var(--sc) - 0.41px)) calc(100% - 0px - 0.70711*calc(var(--sc) - 0.41px)),
+    calc(100% - 0px - 0.92388*calc(var(--sc) - 0.41px)) calc(100% - 0px - 0.38268*calc(var(--sc) - 0.41px)),
+    calc(100% - 0px - 1*calc(var(--sc) - 0.41px)) calc(100% - 0px),
+    calc(0px + 1*calc(var(--sc) - 0.41px)) calc(100% - 0px),
+    calc(0px + 0.92388*calc(var(--sc) - 0.41px)) calc(100% - 0px - 0.38268*calc(var(--sc) - 0.41px)),
+    calc(0px + 0.70711*calc(var(--sc) - 0.41px)) calc(100% - 0px - 0.70711*calc(var(--sc) - 0.41px)),
+    calc(0px + 0.38268*calc(var(--sc) - 0.41px)) calc(100% - 0px - 0.92388*calc(var(--sc) - 0.41px)),
+    0px calc(100% - 0px - 1*calc(var(--sc) - 0.41px)));
+}
+.choiceIcon{ flex:none; width:clamp(10px,1.5vh,14px); height:clamp(10px,1.5vh,14px); color:#bd8f45; }
+.choiceIcon svg{ width:100%; height:100%; display:block; }
+/* selected: warmer fill and a stronger label, so the state reads without colour alone */
+.choiceOn .choiceInner{ color:var(--sage-dark); font-weight:600; }
+.choiceOn .choiceInner::before{ background:#f3e6c9; }
+
+/* ---- footer ---- */
+/* disabled while the invitation link is still being checked, or if it turns out not to be on
+   the guest list — nothing should be sendable in that state */
+.choice:disabled{ opacity:.45; cursor:default; }
+
+/* doubles as the design's "terima kasih" line and as the place link/submit feedback appears */
+.status{
+  font-family:var(--sans); font-size:clamp(8px,1.2vh,11px); line-height:1.55;
+  color:#5f5238; opacity:.9; margin-top:clamp(8px,1.7vh,17px); min-height:2.4em;
+}
+.statusBad{ color:#9a4b32; opacity:1; }
+
+/* three dots that fill in one at a time, so the wait reads as "working" rather than "stuck" */
+.dots::after{
+  content:"…"; display:inline-block; width:1.2em; text-align:left;
+  animation:rsvpDots 1.2s steps(4, end) infinite;
+  clip-path:inset(0 100% 0 0);
+}
+@keyframes rsvpDots{
+  0%{ clip-path:inset(0 100% 0 0); }
+  100%{ clip-path:inset(0 0 0 0); }
+}
+@media (prefers-reduced-motion: reduce){
+  .dots::after{ animation:none; clip-path:none; }
+  .choice{ transition:none; }
+}
+/* footer-rsvp.webp: 1947x808 (h = 0.415 x width), pads 12.62% top and bottom */
+.footer{
+  display:block; width:clamp(70px,20vw,120px); margin:0 auto;
+  margin-top:calc(clamp(70px,20vw,120px) * -0.0524 + clamp(4px,0.9vh,10px));
+  margin-bottom:calc(clamp(70px,20vw,120px) * -0.0524);
+}
+
+@media (max-height:680px){
+  .intro, .sub{ line-height:1.35; }
+  .fieldLabel{ margin-top:7px; margin-bottom:3px; }
+  .status{ line-height:1.3; margin-top:7px; }
+}
+@media (max-height:600px){
+  .cornerTL{ --w:min(46vw,200px); }
+  .cornerBL{ --w:min(38vw,165px); }
+  .cornerBR{ --w:min(42vw,180px); }
+  .title{ font-size:22px; letter-spacing:.12em; }
+  .intro, .sub{ font-size:7.5px; line-height:1.3; }
+  .sub{ margin-top:5px; }
+  .fieldLabel{ font-size:8px; margin-top:5px; margin-bottom:2px; }
+  .status{ font-size:7.5px; margin-top:5px; }
+  .side{ display:none; }
+}
