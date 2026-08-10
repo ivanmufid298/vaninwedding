@@ -16,167 +16,328 @@
 
 /* ---- corner florals ---- */
 .corner{ position:absolute; z-index:1; }
-/* top-left/right.webp: artwork flush to its corner, frame 1.413 tall per width */
+/* top-loct.webp: measured alpha bbox is flush to the top edge (0%) and almost flush to its
+   left/right (1.3%/0.1%), h/w 1.503 — so unlike the old top-left/right.webp this needs almost
+   no outward bleed to sit snug in the corner. */
 .cornerTL{
-  --w:min(42vw,200px); width:var(--w);
-  left:calc(var(--w) * -0.05); top:calc(var(--w) * -0.05);
+  --w:min(34vw,160px); width:var(--w);
+  left:calc(var(--w) * -0.012); top:calc(var(--w) * -0.008);
 }
 .cornerTR{
-  --w:min(42vw,200px); width:var(--w);
-  right:calc(var(--w) * -0.05); top:calc(var(--w) * -0.05);
+  --w:min(34vw,160px); width:var(--w);
+  right:calc(var(--w) * -0.012); top:calc(var(--w) * -0.008);
 }
-/* top-corner artwork rotated 180° to serve as the bottom corners */
+/* bot-loct.webp is already drawn as a bottom corner piece, so unlike the old top-corner
+   stand-ins these must NOT be rotated 180°. Its art is near-flush to its box (measured pads:
+   4.8% left / 2.9% right / 0.9% bottom), so it needs almost no outward bleed. */
 .cornerBL{
-  --w:min(32vw,150px); width:var(--w); pointer-events:none; opacity:0.9;
-  left:calc(var(--w) * -0.05); bottom:calc(var(--w) * -0.05);
-  transform:rotate(180deg);
+  --w:min(46vw,220px); width:var(--w); pointer-events:none;
+  left:calc(var(--w) * -0.029); bottom:calc(var(--w) * -0.009);
 }
 .cornerBR{
-  --w:min(32vw,150px); width:var(--w); pointer-events:none; opacity:0.9;
-  right:calc(var(--w) * -0.05); bottom:calc(var(--w) * -0.05);
-  transform:rotate(180deg);
+  --w:min(46vw,220px); width:var(--w); pointer-events:none;
+  right:calc(var(--w) * -0.029); bottom:calc(var(--w) * -0.009);
 }
 
 /* ---- heading ---- */
 /* capped so "Acara & Lokasi" stays on one line in the block's width — at the previous size it
    wrapped to three lines and cost ~30px of height this slide can't spare */
+/* champagne-gold, matching the gilded ornaments above and below it rather than the plain ivory
+   it used to be; the gradient gives the same top-lit sheen the crown artwork has */
 .title{
   font-family:var(--serif); font-weight:500; text-transform:uppercase;
   font-size:clamp(18px,3.05vh,29px); line-height:1.14; letter-spacing:.03em;
-  color:var(--ivory);
+  /* solid colour first so the text is never invisible if background-clip:text is unsupported */
+  color:var(--gold-soft);
+  background:linear-gradient(180deg,#f7ead0 0%, var(--gold-soft) 55%, var(--gold) 100%);
+  -webkit-background-clip:text; background-clip:text;
+  -webkit-text-fill-color:transparent;
 }
-/* stroke-gallery.webp is a vertical rod (w/h 0.3333); a 90° turn reads it as a 3:1 horizontal rule */
-.ruleWrap{
-  --v:clamp(96px,22vw,150px);
-  width:var(--v); height:calc(var(--v) / 3);
-  overflow:hidden; position:relative; margin:clamp(3px,0.7vh,8px) auto; pointer-events:none;
+
+/* Both crown assets are mostly transparent padding (62% / 73% of their height), so the negative
+   margins collapse that dead space — otherwise the box reserves it and the ornaments float far
+   from the title. Values are the measured pad fractions × the rendered height. */
+.crownTop, .crownBottom{ display:block; margin-left:auto; margin-right:auto; pointer-events:none; }
+/* crown-loct.webp: 2004x785, pad 25.61% top / 36.94% bottom, so height = 0.3917 × width */
+.crownTop{
+  --cw:clamp(120px,32vw,200px); width:var(--cw);
+  margin-top:calc(var(--cw) * -0.1003);
+  margin-bottom:calc(var(--cw) * -0.1447 + clamp(2px,0.5vh,6px));
 }
-.rule{
-  position:absolute; top:50%; left:50%;
-  width:calc(var(--v) / 3);
-  transform:translate(-50%,-50%) rotate(90deg);
-  display:block;
+/* crown-2-loct.webp: 2172x724, pad 31.77% top / 41.30% bottom, so height = 0.3333 × width */
+.crownBottom{
+  --cw:clamp(130px,34vw,215px); width:var(--cw);
+  margin-top:calc(var(--cw) * -0.1059 + clamp(3px,0.7vh,8px));
+  margin-bottom:calc(var(--cw) * -0.1377 + clamp(3px,0.7vh,8px));
 }
 .intro{
   font-family:var(--sans); font-size:clamp(9.5px,1.35vh,12.5px); line-height:1.6;
-  color:#e6e1cf; opacity:.88; margin-bottom:clamp(8px,1.4vh,15px);
+  color:#e6e1cf; opacity:.88; margin-bottom:clamp(16px,2.9vh,30px);
 }
 
 /* ---- cards ---- */
-.cards{ display:flex; gap:clamp(7px,2vw,14px); align-items:stretch; }
-.card{
-  position:relative; flex:1 1 0; min-width:0;
-  background:linear-gradient(180deg,#fffdf7,#f7f0dd);
-  border:1px solid rgba(199,165,97,0.5); border-radius:10px;
-  /* top padding leaves room for the badge that straddles the top edge */
-  padding:clamp(14px,2.4vh,21px) clamp(6px,2vw,13px) clamp(8px,1.3vh,13px);
-  display:flex; flex-direction:column; align-items:center;
-}
-.cardWide{ margin-top:clamp(8px,1.6vh,16px); }
+/* flex-start, not stretch: forcing the shorter card (Resepsi, one fewer row than Akad Nikah) to
+   match the taller one's height left a big slab of empty ivory at its bottom. Letting each card
+   size to its own content keeps the gap between the border and the text consistent instead. */
+/* the frame now lives inside each card's own box (see below), so unlike the old outline version
+   this gap is the gap you actually see — no halo to subtract */
+.cards{ display:flex; gap:clamp(5px,1.4vw,10px); align-items:flex-start; }
 
-.badge{
-  position:absolute; top:0; left:50%; transform:translate(-50%,-50%);
-  width:clamp(22px,4.2vh,30px); height:clamp(22px,4.2vh,30px); border-radius:50%;
-  background:linear-gradient(180deg,#fffdf7,#f6eeda);
-  border:1px solid rgba(199,165,97,0.55); color:var(--gold);
-  display:flex; align-items:center; justify-content:center;
+/* Concave ("cekung") corners. A `border` or `outline` cannot follow a concave arc — clip-path
+   and mask only ever *cut*, they never stroke — so each gold line is a filled shape clipped to
+   the scooped outline instead:
+     .cardOuter::before  the outer hairline, a hollow 1px ring
+     .cardOuter padding  the gap, left empty so the slide's green shows through it
+     .cardInner          a gold slab whose edge reads as the inner hairline
+     .cardInner::before  the ivory fill, 1px inside that
+   The ring is one polygon: outer contour clockwise then inner contour counter-clockwise, so the
+   default nonzero fill rule cancels in the middle and leaves a real hole. Each quarter-scoop is a
+   5-point approximation of the circular arc. The clip sits on .cardInner rather than .cardOuter
+   because clip-path also clips an element's own pseudo-elements, which would eat the ring. */
+.cardOuter{
+  /* --badge is the medallion's *visible* diameter; .badge scales its box up from it.
+     --sc scoops the card edge, --so the outer line, --fg is the frame band the padding reserves.
+     --so runs a touch wider than --sc so the two arcs stay visually parallel around the corner. */
+  --badge:clamp(28px,4.7vh,38px); --sc:9px; --so:calc(var(--sc) + 2px); --fg:4px;
+  position:relative; flex:1 1 0; min-width:0; padding:var(--fg);
 }
-.badge svg{ width:58%; height:58%; }
+.cardWide{ margin-top:clamp(8px,1.6vh,15px); }
+
+.cardOuter::before{
+  content:""; position:absolute; inset:0; pointer-events:none; background:#ba8238;
+  clip-path:polygon(
+    0px calc(0px + 1*var(--so)), calc(0px + 0.38268*var(--so)) calc(0px + 0.92388*var(--so)),
+    calc(0px + 0.70711*var(--so)) calc(0px + 0.70711*var(--so)),
+    calc(0px + 0.92388*var(--so)) calc(0px + 0.38268*var(--so)), calc(0px + 1*var(--so)) 0px,
+    calc(100% - 0px - 1*var(--so)) 0px,
+    calc(100% - 0px - 0.92388*var(--so)) calc(0px + 0.38268*var(--so)),
+    calc(100% - 0px - 0.70711*var(--so)) calc(0px + 0.70711*var(--so)),
+    calc(100% - 0px - 0.38268*var(--so)) calc(0px + 0.92388*var(--so)),
+    calc(100% - 0px) calc(0px + 1*var(--so)), calc(100% - 0px) calc(100% - 0px - 1*var(--so)),
+    calc(100% - 0px - 0.38268*var(--so)) calc(100% - 0px - 0.92388*var(--so)),
+    calc(100% - 0px - 0.70711*var(--so)) calc(100% - 0px - 0.70711*var(--so)),
+    calc(100% - 0px - 0.92388*var(--so)) calc(100% - 0px - 0.38268*var(--so)),
+    calc(100% - 0px - 1*var(--so)) calc(100% - 0px), calc(0px + 1*var(--so)) calc(100% - 0px),
+    calc(0px + 0.92388*var(--so)) calc(100% - 0px - 0.38268*var(--so)),
+    calc(0px + 0.70711*var(--so)) calc(100% - 0px - 0.70711*var(--so)),
+    calc(0px + 0.38268*var(--so)) calc(100% - 0px - 0.92388*var(--so)),
+    0px calc(100% - 0px - 1*var(--so)), 0px calc(0px + 1*var(--so)),
+    1px calc(100% - 1px - 1*calc(var(--so) - 0.41px)),
+    calc(1px + 0.38268*calc(var(--so) - 0.41px)) calc(100% - 1px - 0.92388*calc(var(--so) - 0.41px)),
+    calc(1px + 0.70711*calc(var(--so) - 0.41px)) calc(100% - 1px - 0.70711*calc(var(--so) - 0.41px)),
+    calc(1px + 0.92388*calc(var(--so) - 0.41px)) calc(100% - 1px - 0.38268*calc(var(--so) - 0.41px)),
+    calc(1px + 1*calc(var(--so) - 0.41px)) calc(100% - 1px),
+    calc(100% - 1px - 1*calc(var(--so) - 0.41px)) calc(100% - 1px),
+    calc(100% - 1px - 0.92388*calc(var(--so) - 0.41px)) calc(100% - 1px - 0.38268*calc(var(--so) - 0.41px)),
+    calc(100% - 1px - 0.70711*calc(var(--so) - 0.41px)) calc(100% - 1px - 0.70711*calc(var(--so) - 0.41px)),
+    calc(100% - 1px - 0.38268*calc(var(--so) - 0.41px)) calc(100% - 1px - 0.92388*calc(var(--so) - 0.41px)),
+    calc(100% - 1px) calc(100% - 1px - 1*calc(var(--so) - 0.41px)),
+    calc(100% - 1px) calc(1px + 1*calc(var(--so) - 0.41px)),
+    calc(100% - 1px - 0.38268*calc(var(--so) - 0.41px)) calc(1px + 0.92388*calc(var(--so) - 0.41px)),
+    calc(100% - 1px - 0.70711*calc(var(--so) - 0.41px)) calc(1px + 0.70711*calc(var(--so) - 0.41px)),
+    calc(100% - 1px - 0.92388*calc(var(--so) - 0.41px)) calc(1px + 0.38268*calc(var(--so) - 0.41px)),
+    calc(100% - 1px - 1*calc(var(--so) - 0.41px)) 1px, calc(1px + 1*calc(var(--so) - 0.41px)) 1px,
+    calc(1px + 0.92388*calc(var(--so) - 0.41px)) calc(1px + 0.38268*calc(var(--so) - 0.41px)),
+    calc(1px + 0.70711*calc(var(--so) - 0.41px)) calc(1px + 0.70711*calc(var(--so) - 0.41px)),
+    calc(1px + 0.38268*calc(var(--so) - 0.41px)) calc(1px + 0.92388*calc(var(--so) - 0.41px)),
+    1px calc(1px + 1*calc(var(--so) - 0.41px)), 1px calc(100% - 1px - 1*calc(var(--so) - 0.41px)));
+}
+
+/* The medallion artwork fills only 77.44% of its square (measured: 793/1024 px, horizontally
+   centred), so the box is scaled up by 1/0.7744 to make the *visible* disc come out at --badge.
+   Centred on the card's own top edge (top:var(--fg), not 0) so it straddles the inner line.
+   Decorative only, so pointer-events:none keeps it from eating clicks meant for the card. */
+.badge{
+  position:absolute; top:var(--fg); left:50%;
+  width:calc(var(--badge) / 0.7744); height:auto;
+  transform:translate(-50%,-50%);
+  z-index:4; pointer-events:none; display:block;
+  /* these three medallions carry a semi-opaque 1px fringe around the full 1024px canvas
+     (alpha 81-95, alpha 0 just inside it) which rendered as a faint box outline around each
+     badge. The artwork starts at 9.4%, so trimming 2% kills the fringe and nothing else.
+     clip-path is visual only, so the centring maths above is unaffected. */
+  clip-path:inset(2%);
+}
+
+/* the card body: a gold slab whose edge is the inner hairline, with the ivory fill 1px inside.
+   z-index:0 makes it a stacking context so that fill can sit behind the text at z-index:-1. */
+.cardInner{
+  position:relative; z-index:0; background:#ba8238;
+  padding:clamp(13px,2.4vh,19px) clamp(10px,2.8vw,17px) clamp(15px,2.6vh,22px);
+  display:flex; flex-direction:column; align-items:center;
+  clip-path:polygon(
+    0px calc(0px + 1*var(--sc)), calc(0px + 0.38268*var(--sc)) calc(0px + 0.92388*var(--sc)),
+    calc(0px + 0.70711*var(--sc)) calc(0px + 0.70711*var(--sc)),
+    calc(0px + 0.92388*var(--sc)) calc(0px + 0.38268*var(--sc)), calc(0px + 1*var(--sc)) 0px,
+    calc(100% - 0px - 1*var(--sc)) 0px,
+    calc(100% - 0px - 0.92388*var(--sc)) calc(0px + 0.38268*var(--sc)),
+    calc(100% - 0px - 0.70711*var(--sc)) calc(0px + 0.70711*var(--sc)),
+    calc(100% - 0px - 0.38268*var(--sc)) calc(0px + 0.92388*var(--sc)),
+    calc(100% - 0px) calc(0px + 1*var(--sc)), calc(100% - 0px) calc(100% - 0px - 1*var(--sc)),
+    calc(100% - 0px - 0.38268*var(--sc)) calc(100% - 0px - 0.92388*var(--sc)),
+    calc(100% - 0px - 0.70711*var(--sc)) calc(100% - 0px - 0.70711*var(--sc)),
+    calc(100% - 0px - 0.92388*var(--sc)) calc(100% - 0px - 0.38268*var(--sc)),
+    calc(100% - 0px - 1*var(--sc)) calc(100% - 0px), calc(0px + 1*var(--sc)) calc(100% - 0px),
+    calc(0px + 0.92388*var(--sc)) calc(100% - 0px - 0.38268*var(--sc)),
+    calc(0px + 0.70711*var(--sc)) calc(100% - 0px - 0.70711*var(--sc)),
+    calc(0px + 0.38268*var(--sc)) calc(100% - 0px - 0.92388*var(--sc)),
+    0px calc(100% - 0px - 1*var(--sc)));
+}
+.cardInner::before{
+  content:""; position:absolute; inset:1px; z-index:-1; background:#fffcf1;
+  clip-path:polygon(
+    1px calc(1px + 1*calc(var(--sc) - 0.41px)),
+    calc(1px + 0.38268*calc(var(--sc) - 0.41px)) calc(1px + 0.92388*calc(var(--sc) - 0.41px)),
+    calc(1px + 0.70711*calc(var(--sc) - 0.41px)) calc(1px + 0.70711*calc(var(--sc) - 0.41px)),
+    calc(1px + 0.92388*calc(var(--sc) - 0.41px)) calc(1px + 0.38268*calc(var(--sc) - 0.41px)),
+    calc(1px + 1*calc(var(--sc) - 0.41px)) 1px, calc(100% - 1px - 1*calc(var(--sc) - 0.41px)) 1px,
+    calc(100% - 1px - 0.92388*calc(var(--sc) - 0.41px)) calc(1px + 0.38268*calc(var(--sc) - 0.41px)),
+    calc(100% - 1px - 0.70711*calc(var(--sc) - 0.41px)) calc(1px + 0.70711*calc(var(--sc) - 0.41px)),
+    calc(100% - 1px - 0.38268*calc(var(--sc) - 0.41px)) calc(1px + 0.92388*calc(var(--sc) - 0.41px)),
+    calc(100% - 1px) calc(1px + 1*calc(var(--sc) - 0.41px)),
+    calc(100% - 1px) calc(100% - 1px - 1*calc(var(--sc) - 0.41px)),
+    calc(100% - 1px - 0.38268*calc(var(--sc) - 0.41px)) calc(100% - 1px - 0.92388*calc(var(--sc) - 0.41px)),
+    calc(100% - 1px - 0.70711*calc(var(--sc) - 0.41px)) calc(100% - 1px - 0.70711*calc(var(--sc) - 0.41px)),
+    calc(100% - 1px - 0.92388*calc(var(--sc) - 0.41px)) calc(100% - 1px - 0.38268*calc(var(--sc) - 0.41px)),
+    calc(100% - 1px - 1*calc(var(--sc) - 0.41px)) calc(100% - 1px),
+    calc(1px + 1*calc(var(--sc) - 0.41px)) calc(100% - 1px),
+    calc(1px + 0.92388*calc(var(--sc) - 0.41px)) calc(100% - 1px - 0.38268*calc(var(--sc) - 0.41px)),
+    calc(1px + 0.70711*calc(var(--sc) - 0.41px)) calc(100% - 1px - 0.70711*calc(var(--sc) - 0.41px)),
+    calc(1px + 0.38268*calc(var(--sc) - 0.41px)) calc(100% - 1px - 0.92388*calc(var(--sc) - 0.41px)),
+    1px calc(100% - 1px - 1*calc(var(--sc) - 0.41px)));
+}
 
 .cardTitle{
   font-family:var(--serif); font-weight:600; text-transform:uppercase;
   font-size:clamp(11.5px,1.75vh,16px); letter-spacing:.08em; color:var(--sage-dark);
   line-height:1.2;
 }
-/* small diamond under each card title */
-.cardDot{
-  display:block; width:5px; height:5px; margin:clamp(3px,0.6vh,7px) auto;
-  background:var(--gold); transform:rotate(45deg); opacity:.75;
+/* Gilded dividers. Both assets are ~42%/34% transparent padding top and bottom, so the negative
+   margins collapse that dead space and the visible gap is what's actually written here. */
+.cardRule, .dateRule{ display:block; margin-left:auto; margin-right:auto; pointer-events:none; }
+/* akad-resepsi-loct.webp: 2216x709 (h = 0.3199 x width), pad 42.03% top / 42.17% bottom */
+.cardRule{
+  --rw:64%; width:var(--rw);
+  margin-top:calc(var(--rw) * -0.1345 + clamp(3px,0.6vh,7px));
+  margin-bottom:calc(var(--rw) * -0.1349 + clamp(3px,0.6vh,7px));
+}
+/* date-loct.webp: 2172x724 (h = 0.3333 x width), pad 39.78% top / 42.13% bottom */
+.dateRule{
+  --rw:88%; width:var(--rw);
+  margin-top:calc(var(--rw) * -0.1326 + clamp(4px,0.8vh,9px));
+  margin-bottom:calc(var(--rw) * -0.1404 + clamp(4px,0.8vh,9px));
 }
 
+/* left-aligned, not centered: with the date wrapping to two lines, a centered shrink-wrapped row
+   put its icon and its text visibly out of step with each other — icon pinned to the row's own
+   left edge, but that edge drifting wherever the widest wrapped line happened to land. Anchoring
+   the whole row to the card's left edge keeps the icon column consistent line to line.
+   text-align:left overrides the slide-wide text-align:center (Deck.module.css) that every slide
+   inherits — without it, a wrapped second line re-centers itself under the first instead of
+   staying flush with it. */
+/* nowrap: "Minggu, 30 Agustus 2026" is the longest line any card has to show, so it sets the
+   floor for this font-size — sized to fit that on one line rather than wrapping "2026" down. */
 .row, .venue{
-  display:flex; align-items:center; justify-content:center; gap:5px;
-  font-family:var(--sans); font-size:clamp(8.5px,1.2vh,11px); line-height:1.5;
-  color:#5f5238; margin-top:clamp(1px,0.4vh,4px);
+  display:flex; align-items:center; justify-content:flex-start; align-self:flex-start; gap:4px;
+  font-family:var(--sans); font-size:clamp(7px,1vh,9.5px); line-height:1.45; white-space:nowrap;
+  color:#5f5238; margin-top:clamp(3px,0.7vh,7px); text-align:left;
 }
-.venue{ font-weight:500; color:var(--sage-dark); text-transform:uppercase; letter-spacing:.03em; }
-.rowIcon{ flex:none; width:clamp(9px,1.4vh,12px); height:clamp(9px,1.4vh,12px); color:var(--gold); }
+/* sized to sit on one line inside the narrow event cards rather than wrapping to two */
+.venue{
+  font-weight:500; color:var(--sage-dark); text-transform:uppercase; letter-spacing:.01em;
+  font-size:clamp(7.5px,1.02vh,9.5px); white-space:nowrap;
+}
+.rowIcon{ flex:none; width:clamp(8px,1.2vh,11px); height:clamp(8px,1.2vh,11px); color:var(--gold); }
 .rowIcon svg{ width:100%; height:100%; display:block; }
 
-.dashed{
-  display:block; width:78%; height:1px; margin:clamp(4px,0.9vh,9px) auto;
-  background-image:linear-gradient(90deg, rgba(199,165,97,0.65) 50%, transparent 50%);
-  background-size:5px 1px; background-repeat:repeat-x;
-}
 .address{
-  font-family:var(--sans); font-size:clamp(8px,1.1vh,10.5px); line-height:1.5;
-  color:#6d5c40; opacity:.9; margin-top:clamp(1px,0.3vh,4px);
+  font-family:var(--sans); font-size:clamp(7px,0.98vh,9.5px); line-height:1.42;
+  color:#6d5c40; opacity:.9; text-align:center;
+  margin-top:clamp(1px,0.3vh,4px); margin-bottom:clamp(6px,1.1vh,11px);
 }
 
+/* pill outline like the reference; nowrap keeps it to a single line inside the narrow cards */
 .mapBtn{
-  display:inline-flex; align-items:center; justify-content:center; gap:5px;
-  margin-top:auto; padding-top:clamp(6px,1.2vh,12px);
-  font-family:var(--sans); font-size:clamp(7.5px,1.05vh,10px);
-  letter-spacing:.1em; text-transform:uppercase; color:var(--gold-deep,#a8823c);
-  text-decoration:none;
+  display:inline-flex; align-items:center; justify-content:center; gap:4px;
+  /* auto pushes the pill to the card's bottom so both cards' buttons line up;
+     the gap above comes from .address's margin, since margin-block-start here would
+     override the auto and break that alignment */
+  margin-top:auto; padding:clamp(4px,0.7vh,7px) clamp(5px,1.3vw,9px);
+  border:1px solid rgba(186,130,56,0.5); border-radius:999px;
+  font-family:var(--sans); font-size:clamp(6.5px,0.9vh,9px);
+  letter-spacing:.03em; text-transform:uppercase; color:#a8823c;
+  text-decoration:none; white-space:nowrap; max-width:100%;
 }
-.mapBtnIcon{ flex:none; width:clamp(9px,1.3vh,12px); height:clamp(9px,1.3vh,12px); }
+.mapBtnIcon{ flex:none; width:clamp(8px,1.1vh,11px); height:clamp(8px,1.1vh,11px); }
 .mapBtnIcon svg{ width:100%; height:100%; display:block; }
 
 /* ---- wide location card ---- */
 .wideRow{ display:flex; gap:clamp(8px,2.4vw,16px); align-items:center; width:100%; }
 .wideInfo{ flex:1 1 0; min-width:0; display:flex; flex-direction:column; align-items:center; }
+/* this card's venue name has no icon in front of it (unlike the event cards), so it stays
+   centered under the "Lokasi" title instead of picking up the icon-row left-align */
+.wideInfo .venue{ align-self:center; justify-content:center; }
+/* no border of its own — the card's border+outline already frames this area, and a second
+   stroke right around the map read as a doubled rectangle */
 .mapWrap{
   flex:1 1 0; min-width:0; display:block; overflow:hidden;
-  border:1px solid rgba(199,165,97,0.45); border-radius:8px;
+  border-radius:6px;
   aspect-ratio:1.28; background:#e9e4d6;
 }
 /* pointer-events:none keeps the map from capturing swipes meant for the deck */
 .map{ width:100%; height:100%; border:0; display:block; pointer-events:none; }
 
 /* ---- footer ---- */
-.heart{
-  display:block; width:clamp(11px,1.7vh,16px); margin:clamp(7px,1.4vh,14px) auto 0;
-  color:var(--gold-soft);
+/* same padding-collapse trick as the other ornaments — see .cardRule */
+.footerTop, .footerBottom{ display:block; margin-left:auto; margin-right:auto; pointer-events:none; }
+/* footer-1-loct.webp: 2205x713 (h = 0.3234 x width), pad 39.69% top / 43.34% bottom */
+.footerTop{
+  --rw:clamp(120px,44vw,240px); width:var(--rw);
+  margin-top:calc(var(--rw) * -0.1283 + clamp(16px,3vh,32px));
+  margin-bottom:calc(var(--rw) * -0.1401 + clamp(3px,0.6vh,7px));
 }
-.heart svg{ width:100%; height:auto; display:block; }
+/* footer-2-loct.webp: 2172x724 (h = 0.3333 x width), pad 33.7% top and bottom */
+.footerBottom{
+  --rw:clamp(130px,48vw,260px); width:var(--rw);
+  margin-top:calc(var(--rw) * -0.1123 + clamp(4px,0.8vh,9px));
+  margin-bottom:calc(var(--rw) * -0.1123);
+}
 .closing{
   font-family:var(--sans); font-size:clamp(8.5px,1.15vh,11px); line-height:1.55;
-  color:#e6e1cf; opacity:.85; margin-top:clamp(4px,0.8vh,9px);
+  color:#e6e1cf; opacity:.85;
 }
 
 @media (max-height:680px){
-  .intro{ line-height:1.45; margin-bottom:8px; }
-  .closing{ line-height:1.4; }
-  .address{ line-height:1.35; }
-  .card{ padding:13px 6px 8px; }
-  .dashed{ margin:4px auto; }
+  .intro{ line-height:1.4; margin-bottom:6px; }
+  .closing{ line-height:1.32; }
+  .address{ line-height:1.3; margin-bottom:4px; }
+  .cardInner{ padding:9px 9px 13px; }
+  .cardWide{ margin-top:8px; }
   .row, .venue{ margin-top:1px; }
-  .heart{ margin-top:6px; }
+  .mapBtn{ padding:3px 6px; }
 }
 
 /* smallest phones: pull the decoration in and step the type down so the cards keep the room */
 @media (max-height:600px){
   .cornerTL, .cornerTR{ --w:min(34vw,150px); }
-  .cornerBL, .cornerBR{ --w:min(26vw,110px); }
-  .ruleWrap{ --v:62px; margin:1px auto; }
+  .cornerBL, .cornerBR{ --w:min(38vw,165px); }
+  .crownTop{ --cw:105px; }
+  .crownBottom{ --cw:115px; }
   .block{ padding-bottom:4px; }
-  .title{ font-size:15px; }
-  .intro{ font-size:8.5px; line-height:1.4; margin-bottom:7px; }
-  .card{ padding:12px 6px 7px; }
-  .cardTitle{ font-size:9.5px; }
-  .row, .venue{ font-size:7.5px; margin-top:1px; }
-  .address{ font-size:7.5px; line-height:1.35; }
-  .mapBtn{ font-size:7px; padding-top:5px; }
-  .dashed{ margin:3px auto; }
-  .cardDot{ margin:2px auto; }
-  .closing{ font-size:8px; line-height:1.35; }
-  .heart{ margin-top:3px; }
-  /* the two event cards drop the street address here — it wraps to ~6 lines in a 104px column
-     and the Lokasi card directly below still carries it in full */
-  .card:not(.cardWide) .address{ display:none; }
+  .title{ font-size:14px; }
+  .intro{ font-size:7.5px; line-height:1.3; margin-bottom:5px; }
+  .cardOuter{ --badge:24px; --sc:7px; --fg:3px; }
+  .cardInner{ padding:9px 9px 13px; }
+  .cardWide{ margin-top:7px; }
+  .cardTitle{ font-size:9px; }
+  .row, .venue{ font-size:7px; margin-top:0; }
+  .address{ font-size:6.5px; line-height:1.25; margin-bottom:3px; }
+  .mapBtn{ font-size:6.5px; padding:2px 6px; }
+  .closing{ font-size:7px; line-height:1.3; }
+  .footerTop{ --rw:120px; }
+  .footerBottom{ --rw:130px; }
   /* dropping the pin frees enough width for the venue to sit on one line instead of two */
-  .card:not(.cardWide) .venue .rowIcon{ display:none; }
+  .cardOuter:not(.cardWide) .venue .rowIcon{ display:none; }
   .cardWide .address{ font-size:7px; line-height:1.3; }
   .intro{ font-size:8px; }
   .closing{ font-size:7.5px; }
@@ -184,3 +345,8 @@
      clutter rather than a map. The "Lihat di Google Maps" link still gets you there. */
   .mapWrap{ display:none; }
 }
+
+/* Clears the half of the badge that hangs into the card. Declared after both breakpoints because
+   their `padding: <shorthand>` sets all four sides — putting this up with the other .cardInner
+   rules would let them silently reset it. */
+.cardInner{ padding-top:calc(var(--badge) * 0.5 + clamp(6px,1.1vh,11px)); }

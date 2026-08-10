@@ -12,6 +12,10 @@ interface DetailsSlideProps {
 
 const VENUE = "Saung Engkong Ano";
 const ADDRESS = "Jl. M. Sanun No.44-46, Harapan Jaya, Kec. Cibinong, Kabupaten Bogor, Jawa Barat 16914";
+// the two event cards are ~139px wide, where the full address runs to four lines and would
+// blow out the card's height — they show the locality, and the Lokasi card directly below
+// carries the address in full
+const ADDRESS_SHORT = "Cibinong, Kabupaten Bogor";
 const MAPS_URL = "https://maps.app.goo.gl/8ibCY3s1YyinHdEv7";
 // the short link can't be framed; the embed takes a plain query instead (no API key needed)
 const MAPS_EMBED = `https://www.google.com/maps?q=${encodeURIComponent(ADDRESS)}&output=embed`;
@@ -85,38 +89,43 @@ function MapsButton() {
   );
 }
 
+
 export default function DetailsSlide({ className, innerClassName }: DetailsSlideProps) {
   const handleFloralClick = useFloralClick();
 
   return (
     <section className={`${className} ${styles.detailsSection}`}>
+      {/* top-loct.webp is drawn as a top-RIGHT corner piece (its floral mass sits at 73% across),
+          so the left corner takes the pre-flipped copy. Flipping in CSS isn't an option here: the
+          .rotate sway animation sets the whole transform property every frame with no scaleX term,
+          so it would clobber a static scaleX(-1). */}
       <img
         className={`${styles.corner} ${styles.cornerTL} floral rotate`}
-        src="/assets/top-left.webp"
+        src="/assets/top-loct-mirror.webp"
         alt=""
         onClick={handleFloralClick}
       />
       <img
         className={`${styles.corner} ${styles.cornerTR} floral rotate d2`}
-        src="/assets/top-right.webp"
+        src="/assets/top-loct.webp"
         alt=""
         onClick={handleFloralClick}
       />
-      {/* top-corner pieces turned 180° become bottom-corner pieces */}
-      <img className={`${styles.corner} ${styles.cornerBL}`} src="/assets/top-right4.webp" alt="" />
-      <img className={`${styles.corner} ${styles.cornerBR}`} src="/assets/top-left4.webp" alt="" />
+      {/* bot-loct.webp is a bottom-RIGHT piece (mass at 70% across), so the left gets the flip */}
+      <img className={`${styles.corner} ${styles.cornerBL}`} src="/assets/bot-loct-mirror.webp" alt="" />
+      <img className={`${styles.corner} ${styles.cornerBR}`} src="/assets/bot-loct.webp" alt="" />
 
       <div className={innerClassName}>
         <div className={styles.block}>
+          <img className={styles.crownTop} src="/assets/crown-loct.webp" alt="" />
+
           <h2 className={styles.title}>
             Info
             <br />
             Acara &amp; Lokasi
           </h2>
 
-          <div className={styles.ruleWrap}>
-            <img className={styles.rule} src="/assets/stroke-gallery.webp" alt="" />
-          </div>
+          <img className={styles.crownBottom} src="/assets/crown-2-loct.webp" alt="" />
 
           <p className={styles.intro}>
             Dengan penuh rasa syukur, kami mengundang Bapak/Ibu/Saudara/i untuk
@@ -124,93 +133,101 @@ export default function DetailsSlide({ className, innerClassName }: DetailsSlide
           </p>
 
           <div className={styles.cards}>
-            <article className={styles.card}>
-              <span className={styles.badge}>
-                <Icon name="rings" />
-              </span>
-              <h3 className={styles.cardTitle}>Akad Nikah</h3>
-              <span className={styles.cardDot} />
-              <p className={styles.row}>
-                <span className={styles.rowIcon}>
-                  <Icon name="calendar" />
-                </span>
-                Minggu, 30 Agustus 2026
-              </p>
-              <p className={styles.row}>
-                <span className={styles.rowIcon}>
-                  <Icon name="clock" />
-                </span>
-                08.00 WIB
-              </p>
-              <span className={styles.dashed} />
-              <p className={styles.venue}>
-                <span className={styles.rowIcon}>
-                  <Icon name="pin" />
-                </span>
-                {VENUE}
-              </p>
-              <p className={styles.address}>{ADDRESS}</p>
-              <MapsButton />
+            {/* .cardOuter/.cardInner: a pure-CSS double-line gold frame with scooped (concave)
+                corners — see the stylesheet. No image asset, so padding is just padding again,
+                not a percentage tied to some SVG's internal geometry. */}
+            <article className={styles.cardOuter}>
+              <img className={styles.badge} src="/assets/akad-loct.webp" alt="" />
+              <div className={styles.cardInner}>
+                <h3 className={styles.cardTitle}>Akad Nikah</h3>
+                <img className={styles.cardRule} src="/assets/akad-resepsi-loct.webp" alt="" />
+                <p className={styles.row}>
+                  <span className={styles.rowIcon}>
+                    <Icon name="calendar" />
+                  </span>
+                  Minggu, 30 Agustus 2026
+                </p>
+                <p className={styles.row}>
+                  <span className={styles.rowIcon}>
+                    <Icon name="clock" />
+                  </span>
+                  08.00 WIB
+                </p>
+                <img className={styles.dateRule} src="/assets/date-loct.webp" alt="" />
+                <p className={styles.venue}>
+                  <span className={styles.rowIcon}>
+                    <Icon name="pin" />
+                  </span>
+                  {VENUE}
+                </p>
+                <p className={styles.address}>{ADDRESS_SHORT}</p>
+                <MapsButton />
+              </div>
             </article>
 
-            <article className={styles.card}>
-              <span className={styles.badge}>
-                <Icon name="glass" />
-              </span>
-              <h3 className={styles.cardTitle}>Resepsi</h3>
-              <span className={styles.cardDot} />
-              <p className={styles.row}>
-                <span className={styles.rowIcon}>
-                  <Icon name="clock" />
-                </span>
-                11.00 WIB &ndash; Selesai
-              </p>
-              <span className={styles.dashed} />
-              <p className={styles.venue}>
-                <span className={styles.rowIcon}>
-                  <Icon name="pin" />
-                </span>
-                {VENUE}
-              </p>
-              <p className={styles.address}>{ADDRESS}</p>
-              <MapsButton />
+            <article className={styles.cardOuter}>
+              <img className={styles.badge} src="/assets/resepsi-loct.webp" alt="" />
+              <div className={styles.cardInner}>
+                <h3 className={styles.cardTitle}>Resepsi</h3>
+                <img className={styles.cardRule} src="/assets/akad-resepsi-loct.webp" alt="" />
+                <p className={styles.row}>
+                  <span className={styles.rowIcon}>
+                    <Icon name="calendar" />
+                  </span>
+                  Minggu, 30 Agustus 2026
+                </p>
+                <p className={styles.row}>
+                  <span className={styles.rowIcon}>
+                    <Icon name="clock" />
+                  </span>
+                  11.00 WIB &ndash; Selesai
+                </p>
+                <img className={styles.dateRule} src="/assets/date-loct.webp" alt="" />
+                <p className={styles.venue}>
+                  <span className={styles.rowIcon}>
+                    <Icon name="pin" />
+                  </span>
+                  {VENUE}
+                </p>
+                <p className={styles.address}>{ADDRESS_SHORT}</p>
+                <MapsButton />
+              </div>
             </article>
           </div>
 
-          <article className={`${styles.card} ${styles.cardWide}`}>
-            <span className={styles.badge}>
-              <Icon name="pin" />
-            </span>
-            <div className={styles.wideRow}>
-              <div className={styles.wideInfo}>
-                <h3 className={styles.cardTitle}>Lokasi</h3>
-                <span className={styles.cardDot} />
-                <p className={styles.venue}>{VENUE}</p>
-                <p className={styles.address}>{ADDRESS}</p>
-                <MapsButton />
+          <article className={`${styles.cardOuter} ${styles.cardWide}`}>
+            <img className={styles.badge} src="/assets/icon-loct.webp" alt="" />
+            <div className={styles.cardInner}>
+              <div className={styles.wideRow}>
+                <div className={styles.wideInfo}>
+                  <h3 className={styles.cardTitle}>Lokasi</h3>
+                  <img className={styles.cardRule} src="/assets/akad-resepsi-loct.webp" alt="" />
+                  <p className={styles.venue}>{VENUE}</p>
+                  <p className={styles.address}>{ADDRESS}</p>
+                  <MapsButton />
+                </div>
+                {/* the iframe is pointer-events:none so it can't swallow the deck's swipe/scroll;
+                    the wrapping link is what actually opens Maps */}
+                <a
+                  className={styles.mapWrap}
+                  href={MAPS_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="Buka lokasi di Google Maps"
+                >
+                  <iframe className={styles.map} src={MAPS_EMBED} loading="lazy" title="Peta lokasi" />
+                </a>
               </div>
-              {/* the iframe is pointer-events:none so it can't swallow the deck's swipe/scroll;
-                  the wrapping link is what actually opens Maps */}
-              <a
-                className={styles.mapWrap}
-                href={MAPS_URL}
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="Buka lokasi di Google Maps"
-              >
-                <iframe className={styles.map} src={MAPS_EMBED} loading="lazy" title="Peta lokasi" />
-              </a>
             </div>
           </article>
 
-          <span className={styles.heart}>
-            <Icon name="heart" />
-          </span>
+          <img className={styles.footerTop} src="/assets/footer-1-loct.webp" alt="" />
           <p className={styles.closing}>
             Merupakan suatu kehormatan dan kebahagiaan bagi kami apabila
             Bapak/Ibu/Saudara/i berkenan hadir untuk memberikan doa restu kepada
             kedua mempelai.
           </p>
+          <img className={styles.footerBottom} src="/assets/footer-2-loct.webp" alt="" />
         </div>
       </div>
     </section>
