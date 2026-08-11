@@ -279,15 +279,21 @@
 /* this card's venue name has no icon in front of it (unlike the event cards), so it stays
    centered under the "Lokasi" title instead of picking up the icon-row left-align */
 .wideInfo .venue{ align-self:center; justify-content:center; }
-/* no border of its own — the card's border+outline already frames this area, and a second
-   stroke right around the map read as a doubled rectangle */
-.mapWrap{
-  flex:1 1 0; min-width:0; display:block; overflow:hidden;
-  border-radius:6px;
-  aspect-ratio:1.28; background:#e9e4d6;
+/* photo-album mount: a deeper margin along the bottom edge like a print, a soft drop shadow,
+   and a slight tilt so it reads as a photograph laid on the card rather than an inline image */
+.snapshot{
+  /* the tilt swells the rotated bounding box by height x sin(2.2°) ≈ 2px per side, which
+     .cardInner's clip-path would shave off the corner — this inset absorbs it */
+  flex:1 1 0; min-width:0; margin:0 3px; align-self:center;
+  background:#fffdf8; padding:4px 4px 13px;
+  border:1px solid rgba(189,143,69,0.28); border-radius:2px;
+  box-shadow:0 4px 11px -4px rgba(61,74,48,0.38);
+  transform:rotate(-2.2deg);
 }
-/* pointer-events:none keeps the map from capturing swipes meant for the deck */
-.map{ width:100%; height:100%; border:0; display:block; pointer-events:none; }
+.snapshot img{
+  display:block; width:100%; height:auto;
+  aspect-ratio:1.32; object-fit:cover; border-radius:1px;
+}
 
 /* ---- footer ---- */
 /* same padding-collapse trick as the other ornaments — see .cardRule */
@@ -343,9 +349,7 @@
   .cardWide .address{ font-size:7px; line-height:1.3; }
   .intro{ font-size:8px; }
   .closing{ font-size:7.5px; }
-  /* at this size the map is only ~92px wide — Google's embed chrome swamps it and it reads as
-     clutter rather than a map. The "Lihat di Google Maps" link still gets you there. */
-  .mapWrap{ display:none; }
+  .snapshot{ padding:3px 3px 9px; }
 }
 
 /* Clears the half of the badge that hangs into the card. Declared after both breakpoints because

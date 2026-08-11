@@ -17,8 +17,6 @@ const ADDRESS = "Jl. M. Sanun No.44-46, Harapan Jaya, Kec. Cibinong, Kabupaten B
 // carries the address in full
 const ADDRESS_SHORT = "Cibinong, Kabupaten Bogor";
 const MAPS_URL = "https://maps.app.goo.gl/8ibCY3s1YyinHdEv7";
-// the short link can't be framed; the embed takes a plain query instead (no API key needed)
-const MAPS_EMBED = `https://www.google.com/maps?q=${encodeURIComponent(ADDRESS)}&output=embed`;
 
 function Icon({ name }: { name: "rings" | "glass" | "calendar" | "clock" | "pin" | "heart" }) {
   const common = {
@@ -204,17 +202,11 @@ export default function DetailsSlide({ className, innerClassName }: DetailsSlide
                   <p className={styles.address}>{ADDRESS}</p>
                   <MapsButton />
                 </div>
-                {/* the iframe is pointer-events:none so it can't swallow the deck's swipe/scroll;
-                    the wrapping link is what actually opens Maps */}
-                <a
-                  className={styles.mapWrap}
-                  href={MAPS_URL}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label="Buka lokasi di Google Maps"
-                >
-                  <iframe className={styles.map} src={MAPS_EMBED} loading="lazy" title="Peta lokasi" />
-                </a>
+                {/* a printed snapshot rather than a live map — the "Lihat di Google Maps"
+                    button beside it is what actually opens the location */}
+                <figure className={styles.snapshot}>
+                  <img src="/assets/wedding-venue.webp" alt="Saung Engkong Ano" />
+                </figure>
               </div>
             </div>
           </article>
