@@ -2,8 +2,9 @@
 
 /* eslint-disable @next/next/no-img-element */
 
-import type { KeyboardEvent, MouseEvent } from "react";
+import type { KeyboardEvent } from "react";
 import { useGuest } from "./GuestContext";
+import GuestQrCard from "../qr/GuestQrCard";
 import styles from "./InviteCard.module.css";
 
 interface InviteCardProps {
@@ -17,20 +18,12 @@ export default function InviteCard({
   leaving,
   onContinue,
 }: InviteCardProps) {
-  const { status, displayName } = useGuest();
+  const { status, displayName, id } = useGuest();
   // only a definitive "not on the guest list" closes the door. A network failure ("error") is
   // not proof of anything, so those guests are let through — the RSVP form still holds back.
   const isNotInvited = status === "invalid";
   const isChecking = status === "checking";
   const blocked = isNotInvited || isChecking;
-
-  function handleDownloadClick(e: MouseEvent) {
-    e.preventDefault();
-    e.stopPropagation();
-    alert(
-      "QR code kehadiran akan segera tersedia. Tombol ini akan otomatis mengunduh QR asli setelah dipasang.",
-    );
-  }
 
   function handleContainerClick() {
     if (blocked) return;
@@ -99,144 +92,13 @@ export default function InviteCard({
               <div className={styles.eyebrow}>You&apos;re Invited</div>
               <div className={styles.guestName}>{displayName}</div>
 
-              <div className={styles.qrBox} aria-hidden="true">
-                <svg viewBox="0 0 100 100" width="100" height="100">
-                  <rect
-                    x="6"
-                    y="6"
-                    width="26"
-                    height="26"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="5"
-                  />
-                  <rect
-                    x="15"
-                    y="15"
-                    width="8"
-                    height="8"
-                    fill="currentColor"
-                  />
-                  <rect
-                    x="68"
-                    y="6"
-                    width="26"
-                    height="26"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="5"
-                  />
-                  <rect
-                    x="77"
-                    y="15"
-                    width="8"
-                    height="8"
-                    fill="currentColor"
-                  />
-                  <rect
-                    x="6"
-                    y="68"
-                    width="26"
-                    height="26"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="5"
-                  />
-                  <rect
-                    x="15"
-                    y="77"
-                    width="8"
-                    height="8"
-                    fill="currentColor"
-                  />
-                  <rect
-                    x="42"
-                    y="8"
-                    width="6"
-                    height="6"
-                    fill="currentColor"
-                  />
-                  <rect
-                    x="52"
-                    y="18"
-                    width="6"
-                    height="6"
-                    fill="currentColor"
-                  />
-                  <rect
-                    x="42"
-                    y="28"
-                    width="6"
-                    height="6"
-                    fill="currentColor"
-                  />
-                  <rect
-                    x="60"
-                    y="42"
-                    width="6"
-                    height="6"
-                    fill="currentColor"
-                  />
-                  <rect
-                    x="42"
-                    y="42"
-                    width="6"
-                    height="6"
-                    fill="currentColor"
-                  />
-                  <rect
-                    x="76"
-                    y="42"
-                    width="6"
-                    height="6"
-                    fill="currentColor"
-                  />
-                  <rect
-                    x="42"
-                    y="60"
-                    width="6"
-                    height="6"
-                    fill="currentColor"
-                  />
-                  <rect
-                    x="52"
-                    y="70"
-                    width="6"
-                    height="6"
-                    fill="currentColor"
-                  />
-                  <rect
-                    x="68"
-                    y="60"
-                    width="6"
-                    height="6"
-                    fill="currentColor"
-                  />
-                  <rect
-                    x="80"
-                    y="76"
-                    width="6"
-                    height="6"
-                    fill="currentColor"
-                  />
-                  <rect
-                    x="60"
-                    y="84"
-                    width="6"
-                    height="6"
-                    fill="currentColor"
-                  />
-                </svg>
-              </div>
-              <div className={styles.qrLabel}>QR Code Kehadiran</div>
+              {/* keepSpace so a guest with no id still reserves the plate's height — the block
+                  doubles as the spacer that keeps all three card states the same size */}
+              <GuestQrCard value={id} keepSpace />
 
-              <a
-                className={styles.downloadBtn}
-                href="#"
-                onClick={handleDownloadClick}
-              >
-                Unduh QR Code
-              </a>
+              <p className={styles.qrHint}>
+                Tunjukkan kode ini kepada penerima tamu saat tiba di lokasi.
+              </p>
             </div>
 
             {/* stacked over the reserved space above, centred in it */}

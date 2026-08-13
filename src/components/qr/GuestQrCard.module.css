@@ -1,0 +1,23 @@
+/* The QR plate on the invite card. Sized in the same clamp range as the placeholder it replaces,
+   so the card's height is unchanged. */
+
+.wrap{ display:block; }
+
+/* white, with quiet-zone padding built in — scanners need the margin around the code, and the
+   surrounding card is cream rather than white */
+.plate{
+  width:132px; height:132px; margin:24px auto 0;
+  display:flex; align-items:center; justify-content:center;
+  padding:8px;
+  background:#fff; border:1px solid var(--line); border-radius:6px;
+}
+.plate svg{ display:block; width:100%; height:100%; }
+
+.label{
+  margin-top:9px; font-size:10px; letter-spacing:.2em; text-transform:uppercase;
+  opacity:.6; text-align:center;
+}
+
+@media (max-width:380px){
+  .plate{ width:104px; height:104px; padding:6px; }
+}

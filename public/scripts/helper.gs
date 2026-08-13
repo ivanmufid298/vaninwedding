@@ -48,7 +48,8 @@ function findRsvp(id){
 
           return{
               row:i+1,
-              id:rows[i][0]
+              id:rows[i][0],
+              nama:rows[i][1]
           }
 
       }

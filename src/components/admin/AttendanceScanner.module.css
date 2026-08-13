@@ -1,0 +1,51 @@
+/* Scanner surface. Mobile-first: the camera takes the width it can get, and everything below it
+   is a single column sized for one-handed use at a door. */
+
+.wrap{
+  display:flex; flex-direction:column; gap:16px;
+  width:100%;
+}
+
+/* html5-qrcode injects a <video> (and its own scan-region overlay) in here */
+.reader{
+  width:100%; overflow:hidden;
+  border-radius:14px;
+  border:1px solid rgba(189,143,69,0.45);
+  background:#22291c;
+}
+.reader video{ display:block; width:100% !important; height:auto !important; }
+.reader img{ display:block; margin:0 auto; }
+/* the node has to stay mounted for the library to find it, so idle collapses it instead */
+.readerIdle{ display:none; }
+
+.panel{
+  display:flex; flex-direction:column; align-items:center; gap:16px;
+  padding:22px 20px;
+  border-radius:16px;
+  border:1px solid rgba(189,143,69,0.35);
+  background:rgba(236,231,216,0.06);
+}
+.lead{
+  font-family:var(--sans); font-size:14px; line-height:1.65; text-align:center;
+  color:#ece7d8; opacity:.92;
+}
+
+.primary{
+  width:100%; max-width:280px;
+  font-family:var(--sans); font-size:14px; letter-spacing:.06em;
+  color:#f5efdf; background:#4a5a3c;
+  border:1px solid rgba(189,143,69,0.55); border-radius:10px;
+  padding:14px 20px; cursor:pointer;
+  transition:background .2s ease, transform .15s ease;
+}
+.primary:hover{ background:#57683f; }
+.primary:active{ transform:scale(0.98); }
+
+.hint{
+  font-family:var(--sans); font-size:13px; letter-spacing:.04em; text-align:center;
+  color:#ece7d8; opacity:.75;
+}
+
+@media (prefers-reduced-motion: reduce){
+  .primary{ transition:none; }
+}

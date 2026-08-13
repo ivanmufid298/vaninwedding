@@ -18,6 +18,10 @@ function doPost(e) {
       return createWish(body);
     }
 
+    if (action === "attendance") {
+      return checkAttendance(body);
+    }
+
     const id = body.id;
     const status = body.status;
     const pax = body.pax;

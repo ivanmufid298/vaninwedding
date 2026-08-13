@@ -89,12 +89,12 @@
 }
 .qrLabel{ margin-top:9px; font-size:10px; letter-spacing:.2em; text-transform:uppercase; opacity:.6; }
 
-.downloadBtn{
-  display:inline-block; margin-top:18px; font-size:10.5px; letter-spacing:.2em; text-transform:uppercase;
-  color:var(--sage-dark); border:1px solid var(--gold); padding:11px 24px; border-radius:2px; text-decoration:none;
-  background:none; cursor:pointer; transition:background .3s ease,color .3s ease;
+/* replaced the "Unduh QR Code" button: the code itself is on screen now, so the line explains
+   what to do with it instead of offering a download the project deliberately doesn't produce */
+.qrHint{
+  margin-top:14px; font-size:10px; line-height:1.6; letter-spacing:.02em;
+  color:var(--sage-dark); opacity:.72; max-width:24em; margin-left:auto; margin-right:auto;
 }
-.downloadBtn:hover{ background:var(--gold); color:#fff; }
 
 /* now sits below the framed card on the green, so it is clear of the frame's florals */
 .continueHint{
