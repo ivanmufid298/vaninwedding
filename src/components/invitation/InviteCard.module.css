@@ -36,6 +36,14 @@
   pointer-events:none; z-index:0;
 }
 .cardBody{ position:relative; z-index:1; }
+/* the invited layout, kept in flow purely for its height, so the loading and not-invited
+   screens sit in a card of exactly the same size instead of a squat one */
+.reserve{ visibility:hidden; }
+/* ...and the real message for those two states, centred in the space it reserved */
+.stateLayer{
+  position:absolute; inset:0;
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+}
 
 /* perspective lives here, not on .overlay, so the card still flips in 3D beside its sibling hint */
 .stack{
