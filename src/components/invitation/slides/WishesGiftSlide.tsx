@@ -4,6 +4,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useGuest } from "../GuestContext";
+import { fetchWishes, submitWish, type WishEntry } from "@/lib/rsvp";
 import styles from "./WishesGiftSlide.module.css";
 
 interface WishesGiftSlideProps {
@@ -11,12 +12,14 @@ interface WishesGiftSlideProps {
   innerClassName: string;
 }
 
+/** one card on the wall, mapped from a Wish sheet row */
 interface Wish {
-  id: number;
+  /** the sheet has no id column, so the key is built from the row's own content */
+  key: string;
   name: string;
   message: string;
-  /** epoch ms — formatted for display, so seeded and freshly sent wishes render alike */
-  at: number;
+  /** already formatted by the script, e.g. "12 Agustus 2026 • 11.50" */
+  when: string;
 }
 
 const ACCOUNTS = [
@@ -24,47 +27,9 @@ const ACCOUNTS = [
   { bank: "BCA", logo: "/assets/bca.webp", holder: "Ivan Muhammad Mufid", number: "0700340872" },
 ];
 
-/* Placeholder wishes so the wall isn't an empty box on first view. They are seeded here rather
-   than fetched because there is no wishes endpoint yet — see the note in the RSVP docs. */
-const SEED_WISHES: Wish[] = [
-  {
-    id: 1,
-    name: "Rizky",
-    message:
-      "Selamat menempuh hidup baru, Ivan & Banin! Semoga menjadi keluarga yang sakinah, mawaddah, warahmah 🤍",
-    at: Date.parse("2026-08-12T12:30:00+07:00"),
-  },
-  {
-    id: 2,
-    name: "Aulia",
-    message:
-      "Happy wedding! Semoga selalu diberikan kebahagiaan dan keberkahan dalam rumah tangganya ✨",
-    at: Date.parse("2026-08-12T11:50:00+07:00"),
-  },
-  {
-    id: 3,
-    name: "Dimas",
-    message: "Barakallah Ivan & Banin. Semoga langgeng sampai Jannah 🤍",
-    at: Date.parse("2026-08-11T21:15:00+07:00"),
-  },
-  {
-    id: 4,
-    name: "Aulia",
-    message:
-      "Happy wedding! Semoga selalu diberikan kebahagiaan dan keberkahan dalam rumah tangganya ✨",
-    at: Date.parse("2026-08-12T11:50:00+07:00"),
-  },
-  {
-    id: 5,
-    name: "Dimas",
-    message: "Barakallah Ivan & Banin. Semoga langgeng sampai Jannah 🤍",
-    at: Date.parse("2026-08-11T21:15:00+07:00"),
-  }
-];
-
 /** cards visible at once — must match the .wish flex-basis in the stylesheet */
 const PER_VIEW = 2;
-/** the wall shows the most recent wishes only; at PER_VIEW per page that is five dots */
+/** the script already returns only the ten newest; this is a guard, not the limit */
 const MAX_WISHES = 10;
 const AUTOPLAY_MS = 5000;
 /** how long a manual swipe or dot tap pauses the auto-advance */
@@ -72,20 +37,22 @@ const AUTOPLAY_HOLD = 9000;
 /** minimum horizontal travel before a drag counts as a swipe rather than a tap */
 const SWIPE_MIN = 40;
 
-const MONTHS = [
-  "Januari", "Februari", "Maret", "April", "Mei", "Juni",
-  "Juli", "Agustus", "September", "Oktober", "November", "Desember",
-];
-
-/* returned in two pieces rather than one string: three cards across leaves each one about 100px
-   wide, too narrow for "12 Agustus 2026 • 11.50" on a single line, so the stylesheet stacks the
-   date over the time on the smallest screens */
-function formatWhen(at: number) {
-  const d = new Date(at);
+function toWish(entry: WishEntry, i: number): Wish {
   return {
-    date: `${d.getDate()} ${MONTHS[d.getMonth()]} ${d.getFullYear()}`,
-    time: `${d.getHours()}.${String(d.getMinutes()).padStart(2, "0")}`,
+    key: `${i}-${entry.created_at}-${entry.nama}`,
+    name: entry.nama || "Tamu",
+    message: entry.ucapan,
+    when: entry.created_at,
   };
+}
+
+/* The script hands back one preformatted string, but the card needs the halves separately so the
+   stylesheet can stack the time under the date on the narrowest screens. Splitting on the script's
+   own separator keeps the client from re-parsing (and possibly re-interpreting) the timestamp. */
+function splitWhen(when: string) {
+  const at = when.indexOf("•");
+  if (at === -1) return { date: when, time: "" };
+  return { date: when.slice(0, at).trim(), time: when.slice(at + 1).trim() };
 }
 
 function Icon({ name }: { name: "send" | "chat" | "heart" | "copy" }) {
@@ -130,32 +97,57 @@ function Icon({ name }: { name: "send" | "chat" | "heart" | "copy" }) {
 }
 
 export default function WishesGiftSlide({ className, innerClassName }: WishesGiftSlideProps) {
-  const { displayName } = useGuest();
+  // the id is what the script writes a wish against; the name comes back with the row
+  const { id, status: link } = useGuest();
 
-  const [wishes, setWishes] = useState<Wish[]>(SEED_WISHES);
+  const [wishes, setWishes] = useState<Wish[]>([]);
+  const [wall, setWall] = useState<"loading" | "ready" | "error">("loading");
   const [draft, setDraft] = useState("");
+  const [send, setSend] = useState<"idle" | "sending" | "ok" | "error">("idle");
+  const [sendMsg, setSendMsg] = useState("");
   // which account number was copied last, so the confirmation shows on that row only
   const [copied, setCopied] = useState<string | null>(null);
 
   const [idx, setIdx] = useState(0);
   const carouselRef = useRef<HTMLDivElement>(null);
 
-  /* Long wishes are clamped to CLAMP_LINES with an ellipsis and a "Selengkapnya" toggle. Which
-     ones actually overflow can only be known after layout — it depends on the card width and where
-     the words break — so the clamped paragraphs are measured rather than guessed at from their
-     length. The ResizeObserver fires once as soon as it starts observing, which covers the first
-     measurement too, and again whenever the carousel is resized. */
-  const [overflowing, setOverflowing] = useState<number[]>([]);
-  const [expandedId, setExpandedId] = useState<number | null>(null);
+  /* Loads the wall. The script sorts newest-first and caps at ten, so the response is taken as
+     given. Aborting matters because this also runs after a send. */
+  const loadWishes = useCallback((signal?: AbortSignal) => {
+    return fetchWishes(signal)
+      .then((rows) => {
+        if (signal?.aborted) return;
+        setWishes(rows.map(toWish));
+        setWall("ready");
+      })
+      .catch((err) => {
+        if (signal?.aborted || (err as Error)?.name === "AbortError") return;
+        setWall("error");
+      });
+  }, []);
+
+  useEffect(() => {
+    const ac = new AbortController();
+    void loadWishes(ac.signal);
+    return () => ac.abort();
+  }, [loadWishes]);
+
+  /* Long wishes are clamped with an ellipsis and a "Selengkapnya" toggle. Which ones actually
+     overflow can only be known after layout — it depends on the card width and where the words
+     break — so the clamped paragraphs are measured rather than guessed at from their length. The
+     ResizeObserver fires once as soon as it starts observing, which covers the first measurement
+     too, and again whenever the carousel is resized. */
+  const [overflowing, setOverflowing] = useState<string[]>([]);
+  const [expandedKey, setExpandedKey] = useState<string | null>(null);
 
   useEffect(() => {
     const car = carouselRef.current;
     if (!car) return;
     const ro = new ResizeObserver(() => {
-      const next: number[] = [];
+      const next: string[] = [];
       car.querySelectorAll<HTMLElement>("[data-wish-text]").forEach((el) => {
         // an expanded paragraph is unclamped, so it never reports overflow — keep its toggle
-        if (el.scrollHeight - el.clientHeight > 1) next.push(Number(el.dataset.wishText));
+        if (el.scrollHeight - el.clientHeight > 1) next.push(el.dataset.wishText ?? "");
       });
       setOverflowing((prev) =>
         prev.length === next.length && prev.every((v, i) => v === next[i]) ? prev : next
@@ -230,19 +222,27 @@ export default function WishesGiftSlide({ className, innerClassName }: WishesGif
     [safeIdx, lastIdx, goTo]
   );
 
-  /* Kept in component state: there is no wishes sheet behind the Apps Script yet, so a sent wish
-     lives for this visit only. Swapping this for a POST is the only change needed once there is. */
-  const sendWish = useCallback(() => {
-    const message = draft.trim();
-    if (!message) return;
-    setWishes((prev) => [
-      { id: Date.now(), name: displayName, message, at: Date.now() },
-      ...prev,
-    ]);
-    setDraft("");
-    // the new wish goes to the front of the list, so show it
-    goTo(0);
-  }, [draft, displayName, goTo]);
+  /* Writes to the Wish sheet, then reloads the wall from the script rather than prepending
+     locally — the row comes back with the guest's name as the sheet has it and a timestamp
+     formatted by the script, so a re-read is the only way the new card matches its neighbours. */
+  const sendWish = useCallback(async () => {
+    const ucapan = draft.trim();
+    if (!ucapan || !id || send === "sending") return;
+    setSend("sending");
+    setSendMsg("");
+    try {
+      await submitWish({ id, ucapan });
+      setDraft("");
+      await loadWishes();
+      setSend("ok");
+      setSendMsg("Terima kasih, ucapan Anda sudah kami terima.");
+      // the newest wish is the first card
+      goTo(0);
+    } catch (err) {
+      setSend("error");
+      setSendMsg(err instanceof Error ? err.message : "Ucapan gagal dikirim.");
+    }
+  }, [draft, id, send, loadWishes, goTo]);
 
   const copyNumber = useCallback(async (number: string) => {
     try {
@@ -312,14 +312,29 @@ export default function WishesGiftSlide({ className, innerClassName }: WishesGif
               <button
                 type="button"
                 className={styles.sendBtn}
-                onClick={sendWish}
-                disabled={!draft.trim()}
+                onClick={() => void sendWish()}
+                // no id means the link was never matched to a guest, and the script rejects a
+                // wish without one — better to disable than to let it fail on submit
+                disabled={!draft.trim() || !id || send === "sending"}
               >
                 <span className={styles.sendIcon}>
                   <Icon name="send" />
                 </span>
-                Kirim Ucapan
+                {send === "sending" ? "Mengirim…" : "Kirim Ucapan"}
               </button>
+
+              {(sendMsg || link === "invalid" || link === "error") && (
+                <p
+                  className={`${styles.sendNote}${send === "error" || link !== "valid" ? ` ${styles.sendNoteBad}` : ""}`}
+                  role="status"
+                >
+                  {link === "invalid"
+                    ? "Tautan undangan tidak valid, jadi ucapan belum bisa dikirim."
+                    : link === "error"
+                      ? "Gagal memuat data undangan. Periksa koneksi Anda lalu muat ulang halaman."
+                      : sendMsg}
+                </p>
+              )}
 
               {/* stroke-gift.webp is drawn with its arrowhead at the LEFT end, so it is the
                   left-hand rule that has to be mirrored for the pair to aim inward at the label:
@@ -339,11 +354,23 @@ export default function WishesGiftSlide({ className, innerClassName }: WishesGif
                 <img className={styles.wallRule} src="/assets/stroke-gift.webp" alt="" />
               </div>
 
-              {/* Three cards across as in the design, advancing on their own and on a swipe —
+              {/* the wall's own states — the carousel below stays mounted either way, so its
+                  ResizeObserver keeps its reference to the track */}
+              {wall !== "ready" || shown.length === 0 ? (
+                <p className={styles.wallNote}>
+                  {wall === "loading"
+                    ? "Memuat ucapan…"
+                    : wall === "error"
+                      ? "Ucapan belum bisa dimuat. Periksa koneksi Anda lalu muat ulang halaman."
+                      : "Belum ada ucapan. Jadilah yang pertama menuliskannya."}
+                </p>
+              ) : null}
+
+              {/* Two cards across as in the design, advancing on their own and on a swipe —
                   no arrows. The whole strip is laid out side by side and slid with a transform,
-                  so every card keeps the height of the tallest one and nothing jumps as it moves. */}
+                  so each card keeps its own height and nothing jumps as it moves. */}
               <div
-                className={styles.carousel}
+                className={`${styles.carousel}${shown.length === 0 ? ` ${styles.carouselEmpty}` : ""}`}
                 ref={carouselRef}
                 onTouchStart={onTouchStart}
                 onTouchEnd={onTouchEnd}
@@ -355,13 +382,13 @@ export default function WishesGiftSlide({ className, innerClassName }: WishesGif
                   {shown.map((w, i) => {
                     const onScreen =
                       i >= safeIdx * PER_VIEW && i < (safeIdx + 1) * PER_VIEW;
-                    const expanded = expandedId === w.id;
+                    const expanded = expandedKey === w.key;
                     // an expanded paragraph reports no overflow, so its toggle is kept by the
                     // expanded flag rather than by the measurement
-                    const canExpand = expanded || overflowing.includes(w.id);
+                    const canExpand = expanded || overflowing.includes(w.key);
                     return (
                       <li
-                        key={w.id}
+                        key={w.key}
                         className={styles.wish}
                         // cards scrolled off the strip stay in the layout but out of the reading order
                         aria-hidden={!onScreen}
@@ -383,7 +410,7 @@ export default function WishesGiftSlide({ className, innerClassName }: WishesGif
                                 on every card instead of riding up and down with the text */}
                             <p
                               className={`${styles.wishText}${expanded ? ` ${styles.wishTextOpen}` : ""}`}
-                              data-wish-text={w.id}
+                              data-wish-text={w.key}
                             >
                               {w.message}
                             </p>
@@ -392,7 +419,7 @@ export default function WishesGiftSlide({ className, innerClassName }: WishesGif
                             <button
                               type="button"
                               className={`${styles.more}${canExpand ? "" : ` ${styles.moreHidden}`}`}
-                              onClick={() => setExpandedId(expanded ? null : w.id)}
+                              onClick={() => setExpandedKey(expanded ? null : w.key)}
                               disabled={!canExpand || !onScreen}
                               aria-hidden={!canExpand}
                               tabIndex={canExpand && onScreen ? undefined : -1}
@@ -402,11 +429,15 @@ export default function WishesGiftSlide({ className, innerClassName }: WishesGif
 
                             <img className={styles.wishRule} src="/assets/akad-resepsi-loct.webp" alt="" />
                             <p className={styles.wishWhen}>
-                              <span>{formatWhen(w.at).date}</span>
-                              <span className={styles.whenSep} aria-hidden="true">
-                                ·
-                              </span>
-                              <span>{formatWhen(w.at).time}</span>
+                              <span>{splitWhen(w.when).date}</span>
+                              {splitWhen(w.when).time && (
+                                <>
+                                  <span className={styles.whenSep} aria-hidden="true">
+                                    ·
+                                  </span>
+                                  <span>{splitWhen(w.when).time}</span>
+                                </>
+                              )}
                             </p>
                           </div>
                         </div>

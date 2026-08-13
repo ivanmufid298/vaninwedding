@@ -51,3 +51,42 @@ export async function submitRsvp(input: {
   if (!data?.success) throw new Error(data?.message || "Konfirmasi gagal dikirim.");
   return { action: data.action === "updated" ? "updated" : "created" };
 }
+
+/** A row from the Wish sheet. `created_at` arrives already formatted by the script
+ *  (`dd MMMM yyyy • HH.mm` in the script's timezone), so the client never parses it. */
+export interface WishEntry {
+  nama: string;
+  ucapan: string;
+  created_at: string;
+}
+
+/** The newest wishes for the guestbook wall. The script already sorts newest-first and caps the
+ *  list at ten, so this returns them as they come. */
+export async function fetchWishes(signal?: AbortSignal): Promise<WishEntry[]> {
+  const res = await fetch(`${ENDPOINT}?action=wish`, { signal });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  const data = await res.json();
+  if (!data?.success || !Array.isArray(data.data)) {
+    throw new Error(data?.message || "Ucapan gagal dimuat.");
+  }
+  return data.data.map((w: Partial<WishEntry>) => ({
+    nama: String(w?.nama ?? ""),
+    ucapan: String(w?.ucapan ?? ""),
+    created_at: String(w?.created_at ?? ""),
+  }));
+}
+
+/** Appends a wish to the Wish sheet. The guest's name is looked up from the id server-side, so
+ *  only the id and the message go up. Note the ?action=wish on the URL: doPost routes on the
+ *  query parameter, and without it the script would treat this as an RSVP. */
+export async function submitWish(input: { id: string; ucapan: string }): Promise<void> {
+  const res = await fetch(`${ENDPOINT}?action=wish`, {
+    method: "POST",
+    // text/plain for the same reason as submitRsvp — see the note there
+    headers: { "Content-Type": "text/plain;charset=utf-8" },
+    body: JSON.stringify(input),
+  });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  const data = await res.json();
+  if (!data?.success) throw new Error(data?.message || "Ucapan gagal dikirim.");
+}
