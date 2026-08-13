@@ -3,9 +3,11 @@ function doGet(e){
   const action = e.parameter.action;
 
   if(action == "guest"){
-
       return getGuest(e);
+  }
 
+  if(action == "wish"){
+      return getWish();
   }
 
   return json({

@@ -11,6 +11,13 @@ function doPost(e) {
 
     const body = JSON.parse(e.postData.contents);
 
+    // Routing POST
+    const action = e.parameter.action || "rsvp";
+
+    if (action === "wish") {
+      return createWish(body);
+    }
+
     const id = body.id;
     const status = body.status;
     const pax = body.pax;
@@ -34,7 +41,6 @@ function doPost(e) {
     }
 
     const sheet = getRsvpSheet();
-
     const exist = findRsvp(id);
 
     if (exist) {

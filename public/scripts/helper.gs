@@ -58,3 +58,7 @@ function findRsvp(id){
   return null;
 
 }
+
+function getWishSheet() {
+  return getSpreadsheet().getSheetByName(WISH_SHEET);
+}
