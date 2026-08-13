@@ -95,6 +95,12 @@ export function clearToken(): void {
 
 /* ---- scanning ------------------------------------------------------------------------------- */
 
+/** VIP guests carry a VIB-prefixed invitation id. Front-end only, by design: the sheet and the
+ *  Apps Script know nothing about tiers. */
+export function isVip(id: string): boolean {
+  return /^VIB/i.test(id.trim());
+}
+
 /** Pulls the invitation id out of whatever the camera read. Guests may show a bare id, a
  *  `guest:`-prefixed one, or the whole invitation URL, and there is no chance to explain the
  *  difference at a door — so all three are accepted. */

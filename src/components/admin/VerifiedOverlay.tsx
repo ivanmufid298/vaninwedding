@@ -21,12 +21,6 @@ interface VerifiedOverlayProps {
   durationMs?: number;
 }
 
-/** VIP guests carry a VIB-prefixed invitation id. Front-end only, by design: the sheet and the
- *  Apps Script know nothing about tiers. */
-export function isVip(id: string): boolean {
-  return /^VIB/i.test(id.trim());
-}
-
 /** how long each variant holds the screen before scanning picks up again */
 const HOLD_MS: Record<VerifiedVariant, number> = { regular: 1100, vip: 2000 };
 

@@ -4,9 +4,10 @@ import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "
 import AccessCode from "@/components/admin/AccessCode";
 import Scanner, { type CameraState } from "@/components/admin/Scanner";
 import StatusCard, { type ScanRecord } from "@/components/admin/StatusCard";
-import VerifiedOverlay, { isVip, type VerifiedGuest } from "@/components/admin/VerifiedOverlay";
+import VerifiedOverlay, { type VerifiedGuest } from "@/components/admin/VerifiedOverlay";
 import {
   extractGuestId,
+  isVip,
   readServerToken,
   readToken,
   storeToken,
@@ -89,6 +90,8 @@ export default function AdminCheckIn() {
       inFlight.current = true;
       lastSeen.current = { id, at: Date.now() };
       setBusy(true);
+      // the overlay is gone in a second or two; the card is what staff still have to act on
+      const vipNote = isVip(id) ? " Silakan arahkan ke jalur VIP." : "";
 
       try {
         const res = await submitAttendance({ id }, token);
@@ -100,7 +103,7 @@ export default function AdminCheckIn() {
             id,
             nama: guest.nama,
             time: guest.time,
-            message: "Check-in berhasil dicatat.",
+            message: `Check-in berhasil dicatat.${vipNote}`,
           });
           // the overlay owns the pause from here; it calls resume() when it fades
           setVerified(guest);
@@ -113,7 +116,7 @@ export default function AdminCheckIn() {
             id,
             nama: res.nama,
             time: res.attendance_time,
-            message: "Tamu ini sudah check-in sebelumnya.",
+            message: `Tamu ini sudah check-in sebelumnya.${vipNote}`,
           });
         } else {
           // NOT_FOUND covers "no such guest" and "hasn't RSVP'd" — one answer at a door

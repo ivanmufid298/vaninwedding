@@ -1,5 +1,6 @@
 "use client";
 
+import { isVip } from "@/lib/attendance";
 import styles from "./StatusCard.module.css";
 
 export type ScanStatus = "present" | "already" | "invalid" | "error";
@@ -41,18 +42,47 @@ function NoteIcon({ status }: { status: ScanStatus }) {
   );
 }
 
+function Crown() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path
+        d="M3.6 8.2 7 11.4l3.6-5.6a1.7 1.7 0 0 1 2.8 0L17 11.4l3.4-3.2c.9-.8 2.2.1 1.8 1.2l-2.5 7.4a1.7 1.7 0 0 1-1.6 1.1H5.9a1.7 1.7 0 0 1-1.6-1.1L1.8 9.4c-.4-1.1.9-2 1.8-1.2Z"
+        fill="currentColor"
+      />
+    </svg>
+  );
+}
+
 /** The "Hasil Scan Terakhir" panel — the running record of who just came through. */
 export default function StatusCard({ record }: { record: ScanRecord }) {
   const showsGuest = record.status === "present" || record.status === "already";
+  /* Derived from the id rather than passed in: the prefix is the only source of truth for tier,
+     and the overlay reads it the same way. Tier is orthogonal to outcome, so it gets its own
+     badge and a champagne card — the outcome pill keeps its own colour, or a VIP who was already
+     checked in would lose that fact to the gold. */
+  const vip = isVip(record.id);
 
   return (
-    <section className={`${styles.card} ${styles[record.status]}`} aria-live="polite">
+    <section
+      className={`${styles.card} ${styles[record.status]}${vip ? ` ${styles.vip}` : ""}`}
+      aria-live="polite"
+    >
       <header className={styles.head}>
-        <div>
+        <div className={styles.headText}>
           <h2 className={styles.title}>Hasil Scan Terakhir</h2>
           <p className={styles.sub}>ID: {record.id}</p>
         </div>
-        <span className={styles.pill}>{PILL[record.status]}</span>
+        <div className={styles.tags}>
+          {vip && (
+            <span className={styles.vipTag}>
+              <span className={styles.vipTagIcon}>
+                <Crown />
+              </span>
+              VIP
+            </span>
+          )}
+          <span className={styles.pill}>{PILL[record.status]}</span>
+        </div>
       </header>
 
       <hr className={styles.rule} />

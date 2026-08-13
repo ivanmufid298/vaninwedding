@@ -14,7 +14,36 @@
 .already{ --tone:#a8761a; --tone-soft:rgba(168,118,26,0.12); }
 .invalid, .error{ --tone:#a33a2a; --tone-soft:rgba(163,58,42,0.1); }
 
+/* VIP: champagne ground and a gold edge, so the tier is legible across a door before anyone reads
+   a word of it. The outcome pill and note keep their own --tone on top. */
+.vip{
+  background:linear-gradient(160deg,#fffdf6 0%,#fff8e8 55%,#f7ecd0 100%);
+  border-color:rgba(212,175,55,0.5);
+  box-shadow:
+    0 14px 34px -30px rgba(38,48,28,0.55),
+    0 0 26px -14px rgba(212,175,55,0.75);
+}
+.vip .title{ color:#3a2f12; }
+.vip .sub{ color:#8a6c2a; }
+.vip .label{ color:#8a6c2a; }
+.vip .value{ color:#3a2f12; }
+.vip .rule{ border-top-color:rgba(212,175,55,0.32); }
+
 .head{ display:flex; align-items:flex-start; justify-content:space-between; gap:12px; }
+.headText{ min-width:0; }
+/* the badges stack on a narrow card rather than squeezing the title */
+.tags{ flex:none; display:flex; flex-wrap:wrap; justify-content:flex-end; gap:6px; }
+
+.vipTag{
+  display:inline-flex; align-items:center; gap:5px;
+  font-family:var(--sans); font-weight:600; font-size:12.5px; letter-spacing:.08em;
+  color:#6b4e16;
+  background:linear-gradient(160deg,#f3dfa4,#e5c06a);
+  border:1px solid rgba(212,175,55,0.6);
+  border-radius:999px; padding:5px 12px; white-space:nowrap;
+}
+.vipTagIcon{ display:block; width:13px; height:13px; }
+.vipTagIcon svg{ display:block; width:100%; height:100%; }
 .title{
   font-family:var(--sans); font-weight:600; font-size:17px; letter-spacing:-0.01em;
   color:#1d2317;
