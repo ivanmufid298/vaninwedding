@@ -19,7 +19,12 @@
 }
 /* warm cream, matching the RSVP artwork's own paper tone */
 .rsvp{ background:linear-gradient(180deg,#fdf8ec 0%,#faf2e0 60%,#f6ecd9 100%); }
-.closing{ background:var(--ivory-deep); }
+/* same deep sage as the details slide, so the two green pages bookend the cream ones */
+.wishes{
+  background:radial-gradient(circle at 50% 6%, rgba(226,233,213,0.07), transparent 55%),
+             linear-gradient(170deg,#3d4a30 0%, var(--sage-dark) 85%);
+  color:var(--ivory);
+}
 
 @media (max-width:420px){
   .slide{ padding:44px 20px; }

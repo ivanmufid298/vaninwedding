@@ -1,0 +1,434 @@
+/* Wishes & gift slide. Deep sage page, gilded double-line frame, guestbook + cashless gift.
+   Unlike the rest of the deck this page is deliberately taller than the viewport: the type is
+   sized for comfortable reading rather than squeezed to fit, and .scroller carries the overflow.
+   Ornament offsets come from each asset's measured alpha box, not eyeballed values. */
+
+.wishesSection{ color:var(--ivory); padding:0; }
+
+/* ---- the page frame: two gold hairlines with concave ("cekung") corners. Identical
+   construction to the RSVP slide — outer contour clockwise + inner contour counter-clockwise so
+   the nonzero fill rule cancels in the middle, leaving a genuine 1px hollow stroke. It sits on
+   the section, not inside .scroller, so it stays pinned to the viewport while the page scrolls. */
+/* Absolute inside .page, not inside the section, so it is as tall as the whole document and
+   travels with it — the RSVP slide's frame hugs the window because that page never scrolls.
+   z-index:0 keeps it the bottom-most layer: above the content it cut straight across the corner
+   bouquets and the wish cards. */
+.frame{ position:absolute; inset:clamp(9px,2.2vw,16px); pointer-events:none; z-index:0; }
+.frame::before, .frame::after{ content:""; position:absolute; }
+/* --fgap is the distance between the two lines; the inner radius is derived from it rather
+   than picked by eye, otherwise the pair pinches together at each concave corner. */
+.frame{ --fo:clamp(12px,3vw,20px); --fgap:clamp(4px,1vw,7px); }
+.frame::before{ --so:var(--fo); inset:0; }
+.frame::after{ --so:calc(var(--fo) - 0.4142 * var(--fgap)); inset:var(--fgap); }
+.frame::before, .frame::after{
+  background:#bd8f45;
+  clip-path:polygon(
+    0px calc(0px + 1*var(--so)), calc(0px + 0.38268*var(--so)) calc(0px + 0.92388*var(--so)),
+    calc(0px + 0.70711*var(--so)) calc(0px + 0.70711*var(--so)),
+    calc(0px + 0.92388*var(--so)) calc(0px + 0.38268*var(--so)), calc(0px + 1*var(--so)) 0px,
+    calc(100% - 0px - 1*var(--so)) 0px,
+    calc(100% - 0px - 0.92388*var(--so)) calc(0px + 0.38268*var(--so)),
+    calc(100% - 0px - 0.70711*var(--so)) calc(0px + 0.70711*var(--so)),
+    calc(100% - 0px - 0.38268*var(--so)) calc(0px + 0.92388*var(--so)),
+    calc(100% - 0px) calc(0px + 1*var(--so)), calc(100% - 0px) calc(100% - 0px - 1*var(--so)),
+    calc(100% - 0px - 0.38268*var(--so)) calc(100% - 0px - 0.92388*var(--so)),
+    calc(100% - 0px - 0.70711*var(--so)) calc(100% - 0px - 0.70711*var(--so)),
+    calc(100% - 0px - 0.92388*var(--so)) calc(100% - 0px - 0.38268*var(--so)),
+    calc(100% - 0px - 1*var(--so)) calc(100% - 0px), calc(0px + 1*var(--so)) calc(100% - 0px),
+    calc(0px + 0.92388*var(--so)) calc(100% - 0px - 0.38268*var(--so)),
+    calc(0px + 0.70711*var(--so)) calc(100% - 0px - 0.70711*var(--so)),
+    calc(0px + 0.38268*var(--so)) calc(100% - 0px - 0.92388*var(--so)),
+    0px calc(100% - 0px - 1*var(--so)), 0px calc(0px + 1*var(--so)),
+    1px calc(100% - 1px - 1*calc(var(--so) - 0.41px)),
+    calc(1px + 0.38268*calc(var(--so) - 0.41px)) calc(100% - 1px - 0.92388*calc(var(--so) - 0.41px)),
+    calc(1px + 0.70711*calc(var(--so) - 0.41px)) calc(100% - 1px - 0.70711*calc(var(--so) - 0.41px)),
+    calc(1px + 0.92388*calc(var(--so) - 0.41px)) calc(100% - 1px - 0.38268*calc(var(--so) - 0.41px)),
+    calc(1px + 1*calc(var(--so) - 0.41px)) calc(100% - 1px),
+    calc(100% - 1px - 1*calc(var(--so) - 0.41px)) calc(100% - 1px),
+    calc(100% - 1px - 0.92388*calc(var(--so) - 0.41px)) calc(100% - 1px - 0.38268*calc(var(--so) - 0.41px)),
+    calc(100% - 1px - 0.70711*calc(var(--so) - 0.41px)) calc(100% - 1px - 0.70711*calc(var(--so) - 0.41px)),
+    calc(100% - 1px - 0.38268*calc(var(--so) - 0.41px)) calc(100% - 1px - 0.92388*calc(var(--so) - 0.41px)),
+    calc(100% - 1px) calc(100% - 1px - 1*calc(var(--so) - 0.41px)),
+    calc(100% - 1px) calc(1px + 1*calc(var(--so) - 0.41px)),
+    calc(100% - 1px - 0.38268*calc(var(--so) - 0.41px)) calc(1px + 0.92388*calc(var(--so) - 0.41px)),
+    calc(100% - 1px - 0.70711*calc(var(--so) - 0.41px)) calc(1px + 0.70711*calc(var(--so) - 0.41px)),
+    calc(100% - 1px - 0.92388*calc(var(--so) - 0.41px)) calc(1px + 0.38268*calc(var(--so) - 0.41px)),
+    calc(100% - 1px - 1*calc(var(--so) - 0.41px)) 1px, calc(1px + 1*calc(var(--so) - 0.41px)) 1px,
+    calc(1px + 0.92388*calc(var(--so) - 0.41px)) calc(1px + 0.38268*calc(var(--so) - 0.41px)),
+    calc(1px + 0.70711*calc(var(--so) - 0.41px)) calc(1px + 0.70711*calc(var(--so) - 0.41px)),
+    calc(1px + 0.38268*calc(var(--so) - 0.41px)) calc(1px + 0.92388*calc(var(--so) - 0.41px)),
+    1px calc(1px + 1*calc(var(--so) - 0.41px)), 1px calc(100% - 1px - 1*calc(var(--so) - 0.41px)));
+}
+
+/* ---- corner bouquets. Pinned to the viewport, above the scrolling content, so the page keeps
+   its framed look at any scroll position. Offsets collapse each asset's own transparent margin. */
+/* Positioned against .page, so the top pair sits at the head of the document and the bottom pair
+   at its foot — they scroll away like the printed page in the design instead of hovering over the
+   wish list. pointer-events:none, unlike the other slides' tappable florals: a gesture landing on
+   them must pass through to .scroller beneath, or the page refuses to scroll under each corner.
+   That costs the petal-burst easter egg on this page only. */
+.corner{ position:absolute; z-index:2; pointer-events:none; }
+/* top-left-gift: pads 1.57% left, 0.58% top (0.69% in width units at h/w = 1.194) */
+.cornerTL{
+  --w:min(50vw,236px); width:var(--w);
+  left:calc(var(--w) * -0.016); top:calc(var(--w) * -0.007);
+}
+/* top-right-gift: pads 4.15% right, 1.55% top (1.82% in width units at h/w = 1.174) */
+.cornerTR{
+  --w:min(50vw,236px); width:var(--w);
+  right:calc(var(--w) * -0.0415); top:calc(var(--w) * -0.018);
+}
+/* bot-left-gift: pads 1.99% left, 3.35% bottom (4.73% in width units at h/w = 1.413) */
+.cornerBL{
+  --w:min(46vw,214px); width:var(--w);
+  left:calc(var(--w) * -0.02); bottom:calc(var(--w) * -0.047);
+}
+/* bot-right-gift: pads 2.94% right, 3.02% bottom (4.27% in width units) */
+.cornerBR{
+  --w:min(46vw,214px); width:var(--w);
+  right:calc(var(--w) * -0.029); bottom:calc(var(--w) * -0.043);
+}
+
+/* ---- the scrolling page ---- */
+.scroller{
+  position:absolute; inset:0; z-index:1;
+  overflow-y:auto; overflow-x:hidden;
+  -webkit-overflow-scrolling:touch;
+  overscroll-behavior:contain;
+  /* the deck's own scrollbar would sit on top of the gold frame */
+  scrollbar-width:none;
+}
+.scroller::-webkit-scrollbar{ display:none; }
+
+/* The document itself: full-bleed so the corner bouquets can reach the page edges, with the
+   reading padding applied here rather than on the scroller. The flex centring matters on desktop —
+   .slideInner is a plain block with a 520px cap, so without it the whole column sat against the
+   left edge of a wide window while every other slide (centred by the deck's own flexbox) did not. */
+.page{
+  position:relative; min-height:100%;
+  display:flex; flex-direction:column; align-items:center;
+  padding:clamp(44px,10vh,80px) clamp(22px,6.5vw,34px) clamp(52px,12vh,96px);
+}
+
+.block{
+  position:relative; z-index:3;
+  max-width:min(430px, calc(100vw - 72px)); margin:0 auto; text-align:center;
+}
+/* Every ornament here is drawn with 12-43% transparent padding, collapsed with negative margins,
+   so each one's box overlaps its neighbours by tens of pixels even though nothing is visible
+   there. Without this the gift divider's empty top edge sits over the "Lihat semua ucapan"
+   button and eats its taps. */
+.block img{ pointer-events:none; }
+
+/* ---- headings ---- */
+/* crown-gift: 1964x801 (h = 0.4078 x width), pads 4.49% top / 10.99% bottom of its own height,
+   i.e. 1.83% / 4.48% of the rendered width — collapsed so the written gaps are the visible ones */
+.crown{
+  --cw:clamp(96px,30vw,150px);
+  display:block; width:var(--cw); margin-left:auto; margin-right:auto;
+  margin-top:calc(var(--cw) * -0.0183);
+  margin-bottom:calc(var(--cw) * -0.0448 + 6px);
+}
+.title{
+  font-family:var(--serif); font-weight:500; text-transform:uppercase;
+  font-size:clamp(27px,7.4vw,38px); line-height:1.1; letter-spacing:.11em;
+  color:#f6efdc;
+}
+/* title-stroke-gift: 2172x724 (h = 0.3333 x width), pads 38.54% top / 40.88% bottom of its
+   height = 12.85% / 13.63% of the rendered width */
+.titleRule{
+  --rw:clamp(130px,42vw,200px);
+  display:block; width:var(--rw); margin-left:auto; margin-right:auto;
+  margin-top:calc(var(--rw) * -0.1285 + 8px);
+  margin-bottom:calc(var(--rw) * -0.1363 + 12px);
+}
+.intro{
+  font-family:var(--sans); font-size:clamp(13px,3.5vw,15px); line-height:1.75;
+  color:#e6e0cd; opacity:.95;
+}
+
+/* ---- composer ---- */
+.composer{ position:relative; margin-top:clamp(16px,4vw,22px); }
+.input{
+  display:block; width:100%; resize:none;
+  font-family:var(--sans); font-size:clamp(13px,3.4vw,14.5px); line-height:1.65;
+  color:#f2ecd9; text-align:left;
+  background:rgba(255,253,244,0.05);
+  border:1px solid rgba(189,143,69,0.55); border-radius:10px;
+  /* the quill sits in the bottom-right corner, so the text column stops short of it */
+  padding:14px 46px 34px 16px;
+}
+.input::placeholder{ color:#cfc7b0; opacity:.7; }
+.input:focus{ outline:none; border-color:rgba(214,173,101,0.9); background:rgba(255,253,244,0.08); }
+/* text-gift is square with 14.1% side / 8.2% top / 11.3% bottom padding baked in, so it is drawn
+   larger than its visible mark and pulled tight into the corner */
+.quill{
+  position:absolute; right:6px; bottom:4px; width:34px; pointer-events:none; opacity:.85;
+}
+
+/* a filled plate, deliberately a lighter green than the textarea beside it so the two don't read
+   as one continuous field, and only gently rounded rather than a pill */
+.sendBtn{
+  display:inline-flex; align-items:center; justify-content:center; gap:9px;
+  margin-top:clamp(14px,3.6vw,20px);
+  font-family:var(--sans); font-size:clamp(13px,3.4vw,14.5px);
+  color:#f5efdf; background:#57683f;
+  border:1px solid rgba(189,143,69,0.5); border-radius:9px;
+  padding:12px 26px; cursor:pointer;
+  transition:background .25s ease, transform .18s ease, opacity .25s ease;
+}
+.sendBtn:hover:not(:disabled){ background:#63754a; }
+.sendBtn:active:not(:disabled){ transform:scale(0.97); }
+/* only lightly dimmed while the box is empty: it still has to read as a filled plate distinct
+   from the textarea above it, which is the whole point of the fill */
+.sendBtn:disabled{ opacity:.78; cursor:default; }
+.sendIcon{ flex:none; width:17px; height:17px; color:#e0bd77; }
+.sendIcon svg{ display:block; width:100%; height:100%; }
+
+/* ---- wishes wall ---- */
+.wallHead{
+  display:flex; align-items:center; gap:10px;
+  margin-top:clamp(24px,6vw,34px);
+}
+/* stroke-gift: 2172x724, pads 29.28% top / 29.83% bottom of its height — near-symmetric, so the
+   branch lands on the label's optical centre with only the collapse applied */
+.wallRule{ flex:1 1 0; min-width:0; height:auto; opacity:.9; }
+.wallRuleFlip{ transform:scaleX(-1); }
+.wallLabel{
+  flex:none; display:inline-flex; align-items:center; gap:7px;
+  font-family:var(--sans); font-size:clamp(11px,3vw,13px); letter-spacing:.06em;
+  text-transform:uppercase; color:#efe7d2; white-space:nowrap;
+}
+.wallIcon{ flex:none; width:16px; height:16px; color:#e0bd77; }
+.wallIcon svg{ display:block; width:100%; height:100%; }
+
+/* ---- the wishes carousel: one card at a time, auto-advancing, swipeable, no arrows ---- */
+.carousel{
+  margin-top:clamp(14px,3.6vw,20px);
+  overflow:hidden;
+  /* horizontal drags belong to the carousel, vertical ones to the page underneath */
+  touch-action:pan-y;
+}
+/* align-items:flex-start, not stretch: under stretch every card on the page takes the height of
+   the tallest, so expanding one dragged its neighbour up with it. Each card now sizes to its own
+   content — which is identical across cards anyway, because the clamped paragraph is a fixed
+   height — so only the card that was tapped grows. */
+.track{
+  display:flex; align-items:flex-start; list-style:none;
+  transition:transform .55s cubic-bezier(.4,0,.2,1);
+  will-change:transform;
+}
+/* half the strip each, so translating by multiples of 50% lands exactly on a card without
+   measuring anything. Keep this in step with PER_VIEW in the component. */
+.wish{ flex:0 0 50%; max-width:50%; display:flex; padding:0 4px; }
+
+.wishCard{
+  position:relative; flex:1 1 auto; min-width:0;
+  display:flex; flex-direction:column; text-align:center;
+  background:#f4eee0;
+  border:1px solid rgba(189,143,69,0.4); border-radius:12px;
+  box-shadow:0 9px 20px -12px rgba(0,0,0,0.45);
+  padding:clamp(11px,3.2vw,15px) clamp(11px,3.2vw,15px) clamp(9px,2.6vw,12px);
+}
+/* the typographic quote mark from the design. line-height:0 keeps its huge em box from adding a
+   blank band above the name */
+/* the two card marks on one line */
+.wishHead{ display:flex; align-items:center; justify-content:space-between; gap:8px; }
+/* Two corrections to get the glyph level with the heart. line-height well under 1 shrinks the em
+   box, since the " sits near the top of its em square and a full-height box would hang it far
+   above centre; the translate then drops the ink itself onto the heart's optical centre — measured
+   at 0.24em of the font size, and being a transform it moves the ink without disturbing layout. */
+.quote{
+  display:block; font-family:var(--serif); font-weight:bolder;
+  font-size:clamp(38px,10.5vw,60px); line-height:0.52;
+  color:#c9ab6a; opacity:.8;
+  transform:translateY(0.24em);
+}
+.wishBody{
+  flex:1 1 auto; display:flex; flex-direction:column;
+  padding-top:clamp(5px,1.5vw,8px);
+}
+.wishName{
+  font-family:var(--serif); font-weight:600; font-size:clamp(14.5px,4vw,17px);
+  color:var(--sage-dark); line-height:1.2;
+  overflow-wrap:break-word;
+}
+/* --lines fixes the paragraph's height whether or not the wish fills it: min-height keeps a short
+   wish from pulling the rule and date up, line-clamp keeps a long one from pushing them down, so
+   every card's footer sits at the same place. It is also what caps the card's height on a phone —
+   before this, one long wish set the height of every card on the page. */
+.wishText{
+  --lines:4;
+  font-family:var(--serif); font-size:clamp(12.5px,3.4vw,14.5px); line-height:1.55;
+  color:#4a4230; margin-top:5px; overflow-wrap:break-word;
+  display:-webkit-box; -webkit-box-orient:vertical;
+  -webkit-line-clamp:var(--lines); line-clamp:var(--lines);
+  overflow:hidden;
+  min-height:calc(var(--lines) * 1.55em);
+}
+/* expanded: the clamp lifts and the card grows — a deliberate tap, so the height change is wanted */
+.wishTextOpen{
+  -webkit-line-clamp:unset; line-clamp:unset; overflow:visible; min-height:0;
+}
+
+/* reserved on every card, revealed only where the wish actually overflows */
+.more{
+  align-self:center; margin-top:clamp(4px,1.2vw,7px);
+  font-family:var(--sans); font-size:clamp(10px,2.7vw,11.5px);
+  color:#8a6f3c; background:none; border:0; cursor:pointer;
+  text-decoration:underline; text-underline-offset:3px;
+  text-decoration-color:rgba(138,111,60,0.5);
+  padding:0;
+}
+.moreHidden{ visibility:hidden; }
+/* akad-resepsi-loct.webp: 2216x709 (h = 0.3199 x width), pads 13.40% top / 13.49% bottom of the
+   rendered width. margin-top:auto pins it to the foot of the card, so on a strip where every card
+   is as tall as the longest wish, the rules and dates still line up across cards. */
+/* no margin-top:auto any more — the footer follows the wish rather than being pushed to the floor */
+.wishRule{
+  --ww:min(86%, 140px);
+  display:block; width:var(--ww); margin-left:auto; margin-right:auto;
+  padding-top:clamp(12px,3.2vw,16px);
+  margin-bottom:calc(var(--ww) * -0.1349 + clamp(5px,1.5vw,8px));
+}
+/* one line where the card is wide enough for it, stacked below — see the narrow-screen rule */
+.wishWhen{
+  display:flex; flex-wrap:nowrap; align-items:baseline; justify-content:center; gap:6px;
+  font-family:var(--serif); font-size:clamp(11.5px,3.1vw,13.5px); color:#6a5c3f;
+  opacity:.9; white-space:nowrap;
+}
+.whenSep{ opacity:.7; }
+/* ornament balancing the quote mark across the head row — not a control, so no hover or press
+   affordance and nothing to tab to */
+.heart{
+  flex:none; display:block;
+  width:clamp(17px,4.4vw,20px); height:clamp(17px,4.4vw,20px);
+  color:#c9ab6a;
+}
+.heart svg{ display:block; width:100%; height:100%; }
+
+.dots{
+  display:flex; justify-content:center; gap:7px;
+  margin-top:clamp(12px,3.2vw,16px);
+}
+.dot, .dotOn{
+  width:7px; height:7px; padding:0; border:0; border-radius:50%; cursor:pointer;
+  background:rgba(224,189,119,0.35);
+  transition:background .3s ease, transform .3s ease;
+}
+.dotOn{ background:#e0bd77; transform:scale(1.25); }
+
+/* ---- gift ---- */
+/* bot-stroke-gift: 2172x724, pads 38.40% top / 43.09% bottom of its height = 12.80% / 14.36%
+   of the rendered width */
+.giftRule{
+  --gw:min(100%, 400px);
+  display:block; width:var(--gw); margin-left:auto; margin-right:auto;
+  margin-top:calc(var(--gw) * -0.128 + clamp(26px,6.5vw,38px));
+  margin-bottom:calc(var(--gw) * -0.1436 + clamp(14px,3.5vw,20px));
+}
+.giftNote{
+  font-family:var(--sans); font-size:clamp(12px,3.2vw,13.5px); line-height:1.55;
+  color:#e6e0cd; opacity:.95; margin-top:clamp(7px,2vw,10px);
+}
+/* the designed line breaks, kept only where the longest of the three actually fits */
+.brWide{ display:none; }
+@media (min-width:620px){
+  .brWide{ display:inline; }
+  .giftNote{ text-wrap:initial; }
+}
+
+.accounts{ display:grid; gap:12px; margin-top:clamp(16px,4vw,22px); }
+/* logo, rule, details and the copy button all on one line — the paddings and gaps below are
+   trimmed to buy the account number the width it needs to stay unwrapped beside them */
+.account{
+  display:flex; align-items:center; gap:8px; text-align:left;
+  background:rgba(255,253,244,0.05);
+  border:1px solid rgba(189,143,69,0.45); border-radius:10px;
+  padding:10px;
+}
+/* bca.webp is gold artwork on a transparent ground (74% of the file is transparent), so it goes
+   straight onto the card — no white plate behind it, and it reads as part of the gilt palette.
+   Its own padding is near-symmetric top/bottom (20.1% / 22.0%), so align-items:center on the row
+   lands it optically centred without any margin collapse. */
+.bankMark{
+  flex:none; display:block; width:clamp(42px,11.5vw,54px); height:auto;
+}
+/* the rule between the mark and the details, as in the design */
+.accountSep{
+  flex:none; align-self:stretch; width:1px; margin:2px 0;
+  background:rgba(189,143,69,0.5);
+}
+.accountInfo{ flex:1 1 auto; min-width:0; }
+/* the number leads, the name sits under it — it is the number people are here to copy */
+.number{
+  font-family:var(--serif); font-size:clamp(12px,3.6vw,16px); color:#f6efdc;
+  line-height:1.2; white-space:nowrap;
+}
+.holder{
+  font-family:var(--serif); font-size:clamp(10.5px,2.9vw,12.5px);
+  color:#ded7c3; opacity:.9; line-height:1.3; margin-top:2px;
+}
+/* compact and on the row: one short word, never wrapping */
+.copyBtn{
+  flex:none; display:inline-flex; align-items:center; gap:5px; white-space:nowrap;
+  font-family:var(--sans); font-size:clamp(10px,2.7vw,11.5px); line-height:1.2;
+  color:#f0e8d3; background:none; cursor:pointer;
+  border:1px solid rgba(189,143,69,0.6); border-radius:7px;
+  padding:7px 9px;
+  transition:background .25s ease, transform .18s ease;
+}
+.copyBtn:hover{ background:rgba(255,253,244,0.1); }
+.copyBtn:active{ transform:scale(0.96); }
+.copyIcon{ flex:none; width:15px; height:15px; color:#e0bd77; }
+.copyIcon svg{ display:block; width:100%; height:100%; }
+
+/* ---- closing ---- */
+.thanksRule{
+  --tw:clamp(120px,38vw,180px);
+  display:block; width:var(--tw); margin-left:auto; margin-right:auto;
+  margin-top:calc(var(--tw) * -0.1285 + clamp(22px,5.5vw,32px));
+  margin-bottom:calc(var(--tw) * -0.1363 + clamp(12px,3vw,18px));
+}
+.thanks{
+  font-family:var(--sans); font-size:clamp(12.5px,3.3vw,14px); line-height:1.75; color:#e6e0cd;
+}
+.sig{
+  font-family:var(--script); font-size:clamp(30px,8.5vw,42px); line-height:1.25;
+  color:#e0bd77; margin-top:clamp(12px,3vw,18px);
+}
+/* footer-gift: 2078x757 (h = 0.3643 x width), pads 12.95% top / 14.66% bottom of its height
+   = 4.72% / 5.34% of the rendered width */
+.footer{
+  --fw:clamp(150px,48vw,230px);
+  display:block; width:var(--fw); margin-left:auto; margin-right:auto;
+  margin-top:calc(var(--fw) * -0.0472 + 4px);
+  margin-bottom:calc(var(--fw) * -0.0534);
+}
+
+/* phones: a shorter clamp, since two cards across leaves each one narrow and four lines of it
+   made the card taller than it needed to be. The overflow goes behind "Selengkapnya" either way. */
+@media (max-width:440px){
+  .wishText{ --lines:3; }
+}
+
+/* below this the card is too narrow for "12 Agustus 2026 · 11.50" on one line at a readable size,
+   so the time drops to its own line and the separator goes away */
+@media (max-width:349px){
+  .wishWhen{ flex-direction:column; gap:0; line-height:1.35; }
+  .whenSep{ display:none; }
+}
+
+/* Last resort only. The row fits on one line down to ~350px; below that the account number —
+   which is nowrap, since a wrapped one is easy to mis-key into a banking app — would be squeezed
+   out, so the copy button drops beneath instead. */
+@media (max-width:349px){
+  .account{ flex-wrap:wrap; }
+  .copyBtn{ width:100%; justify-content:center; }
+}
+
+@media (prefers-reduced-motion: reduce){
+  .sendBtn, .copyBtn, .dot, .dotOn{ transition:none; }
+  /* the card still changes, it just doesn't travel */
+  .track{ transition:none; }
+}

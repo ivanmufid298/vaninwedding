@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState, type MouseEvent } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { FloralClickProvider, type FloralClickHandler } from "./FloralClickContext";
 import { GuestProvider } from "./GuestContext";
 import Preloader from "./Preloader";
@@ -186,11 +186,32 @@ export default function Invitation() {
     let wheelLock = 0;
     let touchY: number | null = null;
 
+    /* One slide (wishes & gift) is taller than the viewport and scrolls its own content. It marks
+       its scroller with [data-slide-scroll]; while that slide is the active one, a gesture towards
+       content it hasn't reached yet belongs to the scroller, not to the deck. Only the active slide
+       has visibility:visible, so that alone identifies whether the scroller is on screen — no slide
+       index is hard-coded here. */
+    const scrollingSlide = () => {
+      const el = document.querySelector<HTMLElement>("[data-slide-scroll]");
+      if (!el) return null;
+      return getComputedStyle(el).visibility === "visible" ? el : null;
+    };
+
+    // 2px of slack: fractional scroll heights mean scrollTop rarely lands exactly on the end
+    const consumedByScroller = (down: boolean) => {
+      const el = scrollingSlide();
+      if (!el) return false;
+      return down
+        ? el.scrollTop + el.clientHeight < el.scrollHeight - 2
+        : el.scrollTop > 2;
+    };
+
     const handleWheel = (e: WheelEvent) => {
       if (!deckReadyRef.current) return;
       const now = Date.now();
       if (now - wheelLock < 900) return;
       if (Math.abs(e.deltaY) < 12) return;
+      if (consumedByScroller(e.deltaY > 0)) return;
       wheelLock = now;
       if (e.deltaY > 0) next();
       else prev();
@@ -203,20 +224,25 @@ export default function Invitation() {
     const handleTouchEnd = (e: TouchEvent) => {
       if (!deckReadyRef.current || touchY === null) return;
       const dy = touchY - e.changedTouches[0].clientY;
-      if (Math.abs(dy) > 45) {
-        if (dy > 0) next();
-        else prev();
-      }
       touchY = null;
+      if (Math.abs(dy) <= 45) return;
+      if (consumedByScroller(dy > 0)) return;
+      if (dy > 0) next();
+      else prev();
     };
 
     const handleKeydown = (e: KeyboardEvent) => {
       if (!deckReadyRef.current) return;
+      // typing a wish must not page the deck away mid-sentence
+      const el = e.target as HTMLElement | null;
+      if (el && (el.tagName === "TEXTAREA" || el.tagName === "INPUT" || el.isContentEditable)) return;
       if (e.key === "ArrowDown" || e.key === "PageDown" || e.key === " ") {
+        if (consumedByScroller(true)) return;
         e.preventDefault();
         next();
       }
       if (e.key === "ArrowUp" || e.key === "PageUp") {
+        if (consumedByScroller(false)) return;
         e.preventDefault();
         prev();
       }
@@ -245,13 +271,6 @@ export default function Invitation() {
     }
   }, []);
 
-  const handleRsvpClick = (e: MouseEvent) => {
-    e.preventDefault();
-    alert(
-      "Ganti tautan tombol ini dengan nomor WhatsApp atau formulir RSVP Anda."
-    );
-  };
-
   return (
     <GuestProvider>
       <FloralClickProvider value={handleFloralClick}>
@@ -261,7 +280,7 @@ export default function Invitation() {
       <Envelope open={envelopeOpen} hidden={envelopeHidden} onOpen={openEnvelope} />
       <InviteCard shown={inviteShown} leaving={inviteLeaving} onContinue={handleContinue} />
       <Curtain open={curtainOpen} gone={curtainGone} />
-      <Deck current={current} onRsvpClick={handleRsvpClick} />
+      <Deck current={current} />
       <ScrollCue current={current} total={TOTAL_SLIDES} />
       <Dots total={TOTAL_SLIDES} current={current} show={dotsShow} onSelect={goTo} />
       <MusicToggle playing={musicOn} show={dotsShow} onToggle={toggleMusic} />
