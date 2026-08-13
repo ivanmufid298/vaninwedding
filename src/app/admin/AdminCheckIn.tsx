@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "
 import AccessCode from "@/components/admin/AccessCode";
 import Scanner, { type CameraState } from "@/components/admin/Scanner";
 import StatusCard, { type ScanRecord } from "@/components/admin/StatusCard";
-import VerifiedOverlay, { type VerifiedGuest } from "@/components/admin/VerifiedOverlay";
+import VerifiedOverlay, { isVip, type VerifiedGuest } from "@/components/admin/VerifiedOverlay";
 import {
   extractGuestId,
   readServerToken,
@@ -228,7 +228,15 @@ export default function AdminCheckIn() {
         Scanner berjalan terus — hasil muncul otomatis, tanpa menekan tombol.
       </p>
 
-      {verified && <VerifiedOverlay guest={verified} onDone={resume} />}
+      {verified && (
+        <VerifiedOverlay
+          guest={verified}
+          /* tier is read off the id prefix on the client — the sheet and the Apps Script
+             know nothing about VIPs */
+          variant={isVip(verified.id) ? "vip" : "regular"}
+          onDone={resume}
+        />
+      )}
     </>
   );
 }

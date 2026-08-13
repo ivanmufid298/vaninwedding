@@ -33,8 +33,8 @@ const amiri = Amiri({
 });
 
 export const metadata: Metadata = {
-  title: "Undangan Pernikahan — Ivan & Banin",
-  description: "Undangan pernikahan Ivan Muhammad Mufid & Banin Azzibara",
+  title: "Ivan & Banin",
+  description: "Ivan & Banin",
 };
 
 export const viewport: Viewport = {

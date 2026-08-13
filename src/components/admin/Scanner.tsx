@@ -63,6 +63,11 @@ export default function Scanner({ enabled, onDecode, onCameraState }: ScannerPro
   /* start() and stop() are async and the effect can re-run under them, so a plain "is it running"
      flag would lie. This tracks the transition, not the result. */
   const transitioning = useRef(false);
+  /* The overlay asks for a frozen preview behind it. Stopping the camera tears the <video> out,
+     so the last frame is copied onto a canvas first and shown in its place. Driven through the
+     DOM rather than React state: this is a picture of an external system, not app state, and
+     routing it through setState inside an effect is the cascade the lint rule guards against. */
+  const freezeRef = useRef<HTMLCanvasElement>(null);
   // kept in a ref so the decode callback, which html5-qrcode holds for the camera's lifetime,
   // always calls the current handler rather than the one from the render that started it.
   // Written in an effect, not during render — a ref is not a render-time value.
@@ -78,6 +83,21 @@ export default function Scanner({ enabled, onDecode, onCameraState }: ScannerPro
     },
     [store, onCameraState]
   );
+
+  const freeze = useCallback(() => {
+    const canvas = freezeRef.current;
+    const video = document.querySelector<HTMLVideoElement>(`#${READER_ID} video`);
+    if (!canvas || !video || !video.videoWidth) return;
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    canvas.getContext("2d")?.drawImage(video, 0, 0);
+    canvas.style.opacity = "1";
+  }, []);
+
+  const thaw = useCallback(() => {
+    const canvas = freezeRef.current;
+    if (canvas) canvas.style.opacity = "0";
+  }, []);
 
   const stop = useCallback(async () => {
     const scanner = scannerRef.current;
@@ -100,6 +120,7 @@ export default function Scanner({ enabled, onDecode, onCameraState }: ScannerPro
       // so mounting this component never cascades a render synchronously from its own effect.
       const { Html5Qrcode } = await import("html5-qrcode");
       report("starting");
+      thaw();
       const scanner = new Html5Qrcode(READER_ID, { verbose: false });
       scannerRef.current = scanner;
       await scanner.start(
@@ -132,18 +153,20 @@ export default function Scanner({ enabled, onDecode, onCameraState }: ScannerPro
     } finally {
       transitioning.current = false;
     }
-  }, [report, stop]);
+  }, [report, stop, thaw]);
 
   useEffect(() => {
     if (enabled) {
       void start();
       return;
     }
+    // grabbed before stop(), while the <video> still has pixels in it
+    freeze();
     void stop().then(() => {
       // a failed camera stays failed; pausing is only meaningful for one that was working
       if (store.get().state !== "failed") report("paused");
     });
-  }, [enabled, start, stop, store, report]);
+  }, [enabled, start, stop, store, report, freeze]);
 
   // the camera must not outlive the page
   useEffect(() => () => void stop(), [stop]);
@@ -153,6 +176,8 @@ export default function Scanner({ enabled, onDecode, onCameraState }: ScannerPro
       {/* always mounted: html5-qrcode looks this node up by id before it will start, so creating
           it on demand would race the library */}
       <div id={READER_ID} className={styles.reader} />
+      {/* the held frame, faded in only while the camera is parked */}
+      <canvas ref={freezeRef} className={styles.freeze} aria-hidden="true" />
 
       {state !== "live" && (
         <div className={styles.placeholder}>

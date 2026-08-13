@@ -6,8 +6,7 @@
   color:var(--sage-deep); cursor:pointer;
   display:flex; align-items:center; justify-content:center;
   opacity:0; pointer-events:none;
-  transition:opacity .7s ease, background .3s ease, color .3s ease;
-  -webkit-backdrop-filter:blur(4px); backdrop-filter:blur(4px);
+  transition:opacity .7s ease, background .3s ease, color .3s ease; backdrop-filter:blur(4px);
 }
 .show{ opacity:1; pointer-events:auto; }
 .musicBtn:hover{ background:var(--gold); color:#fff; }
