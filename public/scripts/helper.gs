@@ -49,7 +49,9 @@ function findRsvp(id){
           return{
               row:i+1,
               id:rows[i][0],
-              nama:rows[i][1]
+              nama:rows[i][1],
+              attendance:rows[i][5],
+              attendanceTime:rows[i][6]
           }
 
       }

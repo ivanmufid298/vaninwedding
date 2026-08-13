@@ -1,0 +1,24 @@
+/* globals.css pins html/body to overflow:hidden for the invitation deck, so this route carries its
+   own scrolling surface rather than fighting that. */
+
+.page{
+  position:fixed; inset:0; overflow-y:auto;
+  background:#ffffff;
+  /* --admin-sage is the theme's sage; declared here so every admin component can reach it without
+     touching the invitation's global palette */
+  --admin-sage:#4a5a3c;
+  --admin-ivory:#ece7d8;
+  padding:
+    max(18px, env(safe-area-inset-top))
+    16px
+    max(26px, env(safe-area-inset-bottom));
+}
+
+.shell{
+  width:100%; max-width:480px; margin:0 auto;
+  display:flex; flex-direction:column; gap:18px;
+}
+
+@media (min-width:520px){
+  .page{ padding-top:32px; padding-bottom:40px; }
+}

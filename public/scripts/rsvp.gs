@@ -22,6 +22,18 @@ function doPost(e) {
       return checkAttendance(body);
     }
 
+    if (action !== "rsvp") {
+      return json({
+        success: false,
+        code: "INVALID_ACTION",
+        message: "Unknown action."
+      });
+    }
+
+    if (action === "attendance") {
+      return checkAttendance(body);
+    }
+
     const id = body.id;
     const status = body.status;
     const pax = body.pax;

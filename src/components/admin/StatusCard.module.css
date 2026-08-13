@@ -1,0 +1,62 @@
+/* Recent-scan panel. --tone carries the outcome, but never alone: the pill text and the note icon
+   both say it too, so it survives a dim screen and a colour-blind steward. */
+
+.card{
+  --tone:#3f7d43; --tone-soft:rgba(63,125,67,0.1);
+  display:flex; flex-direction:column;
+  padding:20px 20px 18px;
+  background:#faf8f2;
+  border:1px solid rgba(74,90,60,0.14);
+  border-radius:22px;
+  box-shadow:0 14px 34px -30px rgba(38,48,28,0.55);
+}
+.present{ --tone:#3f7d43; --tone-soft:rgba(63,125,67,0.1); }
+.already{ --tone:#a8761a; --tone-soft:rgba(168,118,26,0.12); }
+.invalid, .error{ --tone:#a33a2a; --tone-soft:rgba(163,58,42,0.1); }
+
+.head{ display:flex; align-items:flex-start; justify-content:space-between; gap:12px; }
+.title{
+  font-family:var(--sans); font-weight:600; font-size:17px; letter-spacing:-0.01em;
+  color:#1d2317;
+}
+.sub{
+  font-family:var(--sans); font-size:13px; color:#787c6f; margin-top:3px;
+}
+.pill{
+  flex:none;
+  font-family:var(--sans); font-weight:500; font-size:13px;
+  color:var(--tone); background:var(--tone-soft);
+  border-radius:999px; padding:6px 14px; white-space:nowrap;
+}
+
+.rule{ border:0; border-top:1px solid rgba(74,90,60,0.12); margin:16px 0; }
+
+/* the time is the longer of the two values ("30 Agustus 2026 • 09.14"), so it gets the wider
+   column — an even split wrapped it onto two lines on a 390px phone */
+.grid{
+  display:grid; grid-template-columns:minmax(0,0.82fr) minmax(0,1.18fr); gap:14px 14px;
+}
+.field{ min-width:0; }
+.label{
+  font-family:var(--sans); font-size:12.5px; color:#787c6f; margin-bottom:3px;
+}
+.value{
+  font-family:var(--sans); font-size:15px; color:#1d2317; line-height:1.35;
+  overflow-wrap:break-word;
+}
+
+.note{
+  display:flex; align-items:center; gap:10px;
+  margin-top:16px; padding:12px 14px;
+  font-family:var(--sans); font-size:13.5px; line-height:1.5; color:var(--tone);
+  background:var(--tone-soft);
+  border:1px solid color-mix(in srgb, var(--tone) 22%, transparent);
+  border-radius:14px;
+}
+.noteIcon{ flex:none; width:19px; height:19px; }
+.noteIcon svg{ display:block; width:100%; height:100%; }
+
+/* one column on the narrowest phones, so a long name never squeezes the time out of shape */
+@media (max-width:340px){
+  .grid{ grid-template-columns:1fr; }
+}

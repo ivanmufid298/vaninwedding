@@ -1,0 +1,67 @@
+/* The moment a guest is let in. It has about a second to be read at arm's length, so the name is
+   the largest thing on screen and everything else is subordinate to it. */
+
+.backdrop{
+  position:fixed; inset:0; z-index:80;
+  display:flex; align-items:center; justify-content:center;
+  padding:24px;
+  background:rgba(20,26,16,0.42);
+  backdrop-filter:blur(7px); -webkit-backdrop-filter:blur(7px);
+  animation:fadeIn .18s ease-out both;
+}
+
+.card{
+  width:100%; max-width:330px;
+  display:flex; flex-direction:column; align-items:center; text-align:center; gap:6px;
+  padding:34px 26px 30px;
+  border-radius:28px;
+  background:linear-gradient(180deg,#f2f8ef,#e6f1e2);
+  border:1px solid rgba(63,125,67,0.28);
+  box-shadow:0 28px 60px -28px rgba(20,40,18,0.6);
+  /* 0.9 -> 1 with a short overshoot, which is what reads as "premium" rather than as a dialog */
+  animation:popIn .42s cubic-bezier(.2,1.5,.42,1) both;
+}
+
+.check{ display:block; width:74px; height:74px; color:#2f7a35; }
+.check svg{ display:block; width:100%; height:100%; overflow:visible; }
+
+.ring{
+  fill:none; stroke:currentColor; stroke-width:2.6; opacity:.32;
+  stroke-dasharray:145; stroke-dashoffset:145;
+  animation:draw .5s ease-out .06s forwards;
+}
+.tick{
+  fill:none; stroke:currentColor; stroke-width:4.2;
+  stroke-linecap:round; stroke-linejoin:round;
+  stroke-dasharray:36; stroke-dashoffset:36;
+  animation:draw .34s cubic-bezier(.2,.8,.3,1) .2s forwards;
+}
+
+.verified{
+  margin-top:8px;
+  font-family:var(--sans); font-weight:600; font-size:13px;
+  letter-spacing:.26em; text-transform:uppercase; color:#2f7a35;
+}
+.name{
+  font-family:var(--serif); font-weight:600; font-size:26px; line-height:1.2;
+  color:#1d2317; overflow-wrap:break-word; max-width:100%;
+}
+.id{
+  font-family:var(--sans); font-size:13px; letter-spacing:.16em; color:#5c6353;
+}
+.time{
+  font-family:var(--sans); font-size:14px; color:#3f4a37; opacity:.9; margin-top:2px;
+}
+
+@keyframes fadeIn{ from{ opacity:0; } to{ opacity:1; } }
+@keyframes popIn{
+  from{ opacity:0; transform:scale(0.9); }
+  to{ opacity:1; transform:scale(1); }
+}
+@keyframes draw{ to{ stroke-dashoffset:0; } }
+
+/* the overlay still appears and still says the same thing — it just stops moving */
+@media (prefers-reduced-motion: reduce){
+  .backdrop, .card{ animation:none; }
+  .ring, .tick{ animation:none; stroke-dashoffset:0; }
+}
