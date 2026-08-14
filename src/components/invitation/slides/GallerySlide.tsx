@@ -11,13 +11,16 @@ interface GallerySlideProps {
   innerClassName: string;
 }
 
-// placeholder shots — swap these for the real photos when they're ready
+/* Display-sized copies, not the masters. The originals run to 4000x6000 — 24 megapixels, which a
+   phone must decode to a ~96 MB bitmap each and then resample down to a ~340px box on every frame
+   of the slide. The files are small (WebP compresses them well); it is the decode and the memory
+   that cost. The masters stay in /assets untouched. */
 const PHOTOS = [
-  "/assets/photo-1.webp",
-  "/assets/photo-2.webp",
-  "/assets/photo-3.webp",
-  "/assets/photo-4.webp",
-  "/assets/photo-5.webp",
+  "/assets/gallery/photo-1.webp",
+  "/assets/gallery/photo-2.webp",
+  "/assets/gallery/photo-3.webp",
+  "/assets/gallery/photo-4.webp",
+  "/assets/gallery/photo-5.webp",
 ];
 
 function Chevron({ dir }: { dir: "prev" | "next" }) {
@@ -94,9 +97,18 @@ export default function GallerySlide({ className, innerClassName }: GallerySlide
                     : `${styles.slot} ${off < 0 ? styles.slotHiddenLeft : styles.slotHiddenRight}`;
               return (
                 <div className={cls} key={src}>
-                  <img className={styles.photo} src={src} alt="" />
+                  {/* async decoding keeps a photo's decode off the frame that reveals the slide */}
+                  <img className={styles.photo} src={src} alt="" decoding="async" />
+                  {/* dims the neighbours by compositing one flat colour, rather than running a
+                      brightness/saturate filter over the whole bitmap every frame */}
+                  <span className={styles.shade} aria-hidden="true" />
                   {off === 0 && (
-                    <img className={styles.photoFrame} src="/assets/frame-gallery.webp" alt="" />
+                    <img
+                      className={styles.photoFrame}
+                      src="/assets/gallery/frame-gallery.webp"
+                      alt=""
+                      decoding="async"
+                    />
                   )}
                 </div>
               );
