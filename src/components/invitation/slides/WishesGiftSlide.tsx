@@ -36,6 +36,8 @@ const AUTOPLAY_MS = 5000;
 const AUTOPLAY_HOLD = 9000;
 /** minimum horizontal travel before a drag counts as a swipe rather than a tap */
 const SWIPE_MIN = 40;
+/** how long a freshly sent wish keeps its highlight */
+const NEW_WISH_MS = 2200;
 
 function toWish(entry: WishEntry, i: number): Wish {
   return {
@@ -110,6 +112,11 @@ export default function WishesGiftSlide({ className, innerClassName }: WishesGif
 
   const [idx, setIdx] = useState(0);
   const carouselRef = useRef<HTMLDivElement>(null);
+  /* Marks the wish that just arrived so the newest card can announce itself. Without it the strip
+     is already on page 0 when a wish is sent, so the list grows with nothing moving — the card
+     simply swaps content, which reads as the page having ignored you. */
+  const [justAdded, setJustAdded] = useState(false);
+  const newTimer = useRef<number | null>(null);
 
   /* Loads the wall. The script sorts newest-first and caps at ten, so the response is taken as
      given. Aborting matters because this also runs after a send. */
@@ -131,6 +138,13 @@ export default function WishesGiftSlide({ className, innerClassName }: WishesGif
     void loadWishes(ac.signal);
     return () => ac.abort();
   }, [loadWishes]);
+
+  useEffect(
+    () => () => {
+      if (newTimer.current) window.clearTimeout(newTimer.current);
+    },
+    []
+  );
 
   /* Long wishes are clamped with an ellipsis and a "Selengkapnya" toggle. Which ones actually
      overflow can only be known after layout — it depends on the card width and where the words
@@ -238,6 +252,9 @@ export default function WishesGiftSlide({ className, innerClassName }: WishesGif
       setSendMsg("Terima kasih, ucapan Anda sudah kami terima.");
       // the newest wish is the first card
       goTo(0);
+      if (newTimer.current) window.clearTimeout(newTimer.current);
+      setJustAdded(true);
+      newTimer.current = window.setTimeout(() => setJustAdded(false), NEW_WISH_MS);
     } catch (err) {
       setSend("error");
       setSendMsg(err instanceof Error ? err.message : "Ucapan gagal dikirim.");
@@ -382,6 +399,8 @@ export default function WishesGiftSlide({ className, innerClassName }: WishesGif
                   {shown.map((w, i) => {
                     const onScreen =
                       i >= safeIdx * PER_VIEW && i < (safeIdx + 1) * PER_VIEW;
+                    // only the first card, and only right after this guest sent it
+                    const isNew = justAdded && i === 0;
                     const expanded = expandedKey === w.key;
                     // an expanded paragraph reports no overflow, so its toggle is kept by the
                     // expanded flag rather than by the measurement
@@ -389,7 +408,7 @@ export default function WishesGiftSlide({ className, innerClassName }: WishesGif
                     return (
                       <li
                         key={w.key}
-                        className={styles.wish}
+                        className={`${styles.wish}${isNew ? ` ${styles.wishNew}` : ""}`}
                         // cards scrolled off the strip stay in the layout but out of the reading order
                         aria-hidden={!onScreen}
                       >

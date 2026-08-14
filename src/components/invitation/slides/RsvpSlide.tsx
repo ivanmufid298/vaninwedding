@@ -13,8 +13,8 @@ interface RsvpSlideProps {
   innerClassName: string;
 }
 
-const RSVP_DEADLINE = "22 Agustus 2026";
-const MAX_GUESTS = 10;
+const RSVP_DEADLINE = "23 Agustus 2026";
+const MAX_GUESTS = 4;
 
 function Icon({ name }: { name: "check" | "cross" }) {
   const common = {
