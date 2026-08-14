@@ -160,7 +160,7 @@ export default function GallerySlide({ className, innerClassName }: GallerySlide
               <div className={styles.nameOrnWrapSm}>
                 <img className={styles.nameOrn} src="/assets/name-gallery.webp" alt="" />
               </div>
-              <h3 className={styles.personName}>Ivan Muhammad Mufid</h3>
+              <h3 className={styles.personName}>Ivan Muhammad Mufid, S.Kom</h3>
               <div className={styles.strokeWrapH}>
                 <img className={styles.strokeH} src="/assets/stroke-gallery.webp" alt="" />
               </div>
@@ -179,7 +179,7 @@ export default function GallerySlide({ className, innerClassName }: GallerySlide
               <div className={styles.nameOrnWrapSm}>
                 <img className={styles.nameOrn} src="/assets/name-gallery.webp" alt="" />
               </div>
-              <h3 className={styles.personName}>Banin Azzibara</h3>
+              <h3 className={styles.personName}>Banin Azzibara, S.Ars</h3>
               <div className={styles.strokeWrapH}>
                 <img className={styles.strokeH} src="/assets/stroke-gallery.webp" alt="" />
               </div>
