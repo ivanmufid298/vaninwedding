@@ -48,6 +48,41 @@ function createCameraStore() {
 
 const SERVER_SNAPSHOT: CameraSnapshot = { state: "starting", failMsg: "" };
 
+/** how far to zoom the lens once the stream is live; clamped to what the camera actually offers */
+const ZOOM_TARGET = 2;
+
+/* Zoom has to come from the camera track, not from CSS. A transform on the <video> would magnify
+   only what the operator sees — html5-qrcode decodes from the source frames, so it would still be
+   reading the same wide, small-QR image while the screen implied otherwise.
+
+   Applied straight to the track rather than through the library's applyVideoConstraints(), which
+   validates against its own allow-list and does not know about zoom. Wrapped in every guard going:
+   zoom is a real capability on Android Chrome, absent on iOS Safari, and asking for it there must
+   be a no-op rather than a broken camera. */
+async function applyZoom(readerId: string, target: number): Promise<number | null> {
+  try {
+    const video = document.querySelector<HTMLVideoElement>(`#${readerId} video`);
+    const track = (video?.srcObject as MediaStream | null)?.getVideoTracks?.()[0];
+    if (!track?.getCapabilities) return null;
+
+    // zoom is not in the standard MediaTrackCapabilities type yet, hence the local widening
+    const caps = track.getCapabilities() as MediaTrackCapabilities & {
+      zoom?: { min: number; max: number; step?: number };
+    };
+    if (!caps.zoom) return null;
+
+    // a lens that only goes to 1.5x should give its best, not throw OverconstrainedError
+    const zoom = Math.min(caps.zoom.max, Math.max(caps.zoom.min, target));
+    await track.applyConstraints({
+      advanced: [{ zoom }],
+    } as unknown as MediaTrackConstraints);
+    return zoom;
+  } catch {
+    // an unsupported or refused zoom leaves the camera exactly as it was
+    return null;
+  }
+}
+
 /* The camera half of the door tool, deliberately free of decisions: it starts, it reports what it
    read, and it stops when told. Everything about guests, tokens and outcomes lives in the page. */
 export default function Scanner({ enabled, onDecode, onCameraState }: ScannerProps) {
@@ -138,6 +173,9 @@ export default function Scanner({ enabled, onDecode, onCameraState }: ScannerPro
           /* per-frame "nothing in view" — normal, and far too noisy to surface */
         }
       );
+      // after start(), never before: the track only exists once the stream is attached. A new
+      // stream is created on every resume, so the zoom is re-applied each time rather than once.
+      await applyZoom(READER_ID, ZOOM_TARGET);
       report("live");
     } catch (err) {
       await stop();
