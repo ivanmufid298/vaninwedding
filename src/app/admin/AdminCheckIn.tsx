@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import AccessCode from "@/components/admin/AccessCode";
+import ManualEntryCard from "@/components/admin/ManualEntryCard";
 import Scanner, { type CameraState } from "@/components/admin/Scanner";
 import StatusCard, { type ScanRecord } from "@/components/admin/StatusCard";
 import VerifiedOverlay, { type VerifiedGuest } from "@/components/admin/VerifiedOverlay";
@@ -31,6 +32,9 @@ export default function AdminCheckIn() {
   const [record, setRecord] = useState<ScanRecord | null>(null);
   const [verified, setVerified] = useState<VerifiedGuest | null>(null);
   const [online, setOnline] = useState(true);
+  /* The manual fallback. It also parks the camera while open — two things writing to the same
+     check-in at once is the one failure mode a door tool cannot recover from gracefully. */
+  const [manualOpen, setManualOpen] = useState(false);
 
   /* Guards, all refs: the decode callback runs from the camera loop, outside React's render, so a
      state flag would still read stale on the very next frame — which is exactly when a second
@@ -66,6 +70,72 @@ export default function AdminCheckIn() {
     setVerified(null);
   }, []);
 
+  /* The one path that actually checks a guest in. The scanner and the manual card both funnel
+     through here, so a fix to the result handling can never apply to only one of them. */
+  const checkIn = useCallback(
+    async (id: string) => {
+      inFlight.current = true;
+      setBusy(true);
+      // the overlay is gone in a second or two; the card is what staff still have to act on
+      const vipNote = isVip(id) ? " Silakan arahkan ke jalur VIP." : "";
+
+      try {
+        const res = await submitAttendance({ id }, token);
+
+        if (res.success) {
+          const guest = { nama: res.nama || id, id, time: res.attendance_time || "—" };
+          setRecord({
+            status: "present",
+            id,
+            nama: guest.nama,
+            time: guest.time,
+            message: `Check-in berhasil dicatat.${vipNote}`,
+          });
+          // a definitive answer, so the fallback closes and the camera comes back
+          setManualOpen(false);
+          // the overlay owns the pause from here; it calls resume() when it fades
+          setVerified(guest);
+          return;
+        }
+
+        if (res.code === "ALREADY_CHECKED_IN") {
+          setRecord({
+            status: "already",
+            id,
+            nama: res.nama,
+            time: res.attendance_time,
+            message: `Tamu ini sudah check-in sebelumnya.${vipNote}`,
+          });
+          setManualOpen(false);
+        } else {
+          // NOT_FOUND covers "no such guest" and "hasn't RSVP'd" — one answer at a door.
+          // The card stays open on a refusal: usually it is one mistyped character.
+          setRecord({
+            status: "invalid",
+            id,
+            message: res.message || "Data tamu tidak ditemukan.",
+          });
+        }
+      } catch (err) {
+        // a failed send must not poison the cooldown — this guest still needs checking in
+        lastSeen.current = null;
+        setRecord({
+          status: "error",
+          id,
+          message:
+            err instanceof Error
+              ? `${err.message}. Periksa koneksi lalu scan ulang.`
+              : "Periksa koneksi lalu scan ulang.",
+        });
+        // the network is the reason the fallback exists — offer it without being asked
+        setManualOpen(true);
+      }
+
+      resumeTimer.current = window.setTimeout(resume, RESUME_AFTER_REFUSAL_MS);
+    },
+    [token, resume]
+  );
+
   const handleDecode = useCallback(
     async (raw: string) => {
       if (inFlight.current) return;
@@ -86,63 +156,38 @@ export default function AdminCheckIn() {
       // the guest is probably still holding their phone up; don't check them in twice
       const seen = lastSeen.current;
       if (seen && seen.id === id && Date.now() - seen.at < SAME_CODE_COOLDOWN_MS) return;
-
-      inFlight.current = true;
       lastSeen.current = { id, at: Date.now() };
-      setBusy(true);
-      // the overlay is gone in a second or two; the card is what staff still have to act on
-      const vipNote = isVip(id) ? " Silakan arahkan ke jalur VIP." : "";
 
-      try {
-        const res = await submitAttendance({ id }, token);
-
-        if (res.success) {
-          const guest = { nama: res.nama || id, id, time: res.attendance_time || "—" };
-          setRecord({
-            status: "present",
-            id,
-            nama: guest.nama,
-            time: guest.time,
-            message: `Check-in berhasil dicatat.${vipNote}`,
-          });
-          // the overlay owns the pause from here; it calls resume() when it fades
-          setVerified(guest);
-          return;
-        }
-
-        if (res.code === "ALREADY_CHECKED_IN") {
-          setRecord({
-            status: "already",
-            id,
-            nama: res.nama,
-            time: res.attendance_time,
-            message: `Tamu ini sudah check-in sebelumnya.${vipNote}`,
-          });
-        } else {
-          // NOT_FOUND covers "no such guest" and "hasn't RSVP'd" — one answer at a door
-          setRecord({
-            status: "invalid",
-            id,
-            message: res.message || "Data tamu tidak ditemukan.",
-          });
-        }
-      } catch (err) {
-        // a failed send must not poison the cooldown — this guest still needs checking in
-        lastSeen.current = null;
-        setRecord({
-          status: "error",
-          id,
-          message:
-            err instanceof Error
-              ? `${err.message}. Periksa koneksi lalu scan ulang.`
-              : "Periksa koneksi lalu scan ulang.",
-        });
-      }
-
-      resumeTimer.current = window.setTimeout(resume, RESUME_AFTER_REFUSAL_MS);
+      await checkIn(id);
     },
-    [token, resume]
+    [resume, checkIn]
   );
+
+  /* Typed ids skip the repeat-scan cooldown on purpose: if someone deliberately types an id that
+     was just scanned, they mean it — most likely the first attempt failed. */
+  const handleManualSubmit = useCallback(
+    (raw: string) => {
+      if (inFlight.current) return;
+      const id = extractGuestId(raw);
+      if (!id) {
+        setRecord({
+          status: "invalid",
+          id: raw.slice(0, 32),
+          message: "Format ID tidak dikenali. Contoh yang benar: IB001.",
+        });
+        return;
+      }
+      lastSeen.current = { id, at: Date.now() };
+      void checkIn(id);
+    },
+    [checkIn]
+  );
+
+  const closeManual = useCallback(() => {
+    setManualOpen(false);
+    // nothing is in flight when the card is cancelled, so this just un-parks the camera
+    resume();
+  }, [resume]);
 
   if (!token) {
     return (
@@ -186,8 +231,9 @@ export default function AdminCheckIn() {
         </div>
 
         <Scanner
-          // parked while a check-in is in flight and while the overlay is up
-          enabled={!busy}
+          // parked while a check-in is in flight, while the overlay is up, and while the manual
+          // card has the floor — one writer at a time
+          enabled={!busy && !manualOpen}
           onDecode={(raw) => void handleDecode(raw)}
           onCameraState={setCamera}
         />
@@ -218,6 +264,44 @@ export default function AdminCheckIn() {
           </span>
         </div>
       </section>
+
+      <ManualEntryCard
+        open={manualOpen}
+        submitting={busy}
+        onSubmit={handleManualSubmit}
+        onCancel={closeManual}
+      />
+
+      {!manualOpen && (
+        <button
+          type="button"
+          className={styles.manualTrigger}
+          onClick={() => setManualOpen(true)}
+        >
+          <span className={styles.manualTriggerIcon} aria-hidden="true">
+            <svg viewBox="0 0 24 24">
+              <rect
+                x="2.6"
+                y="6.2"
+                width="18.8"
+                height="11.6"
+                rx="2.4"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.6"
+              />
+              <path
+                d="M6.4 9.9h.01M9.6 9.9h.01M12.8 9.9h.01M16 9.9h.01M8.6 15.6h6.8"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.8"
+                strokeLinecap="round"
+              />
+            </svg>
+          </span>
+          Input Manual
+        </button>
+      )}
 
       {record ? (
         <StatusCard record={record} />

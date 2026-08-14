@@ -1,0 +1,97 @@
+/* The manual fallback: ivory card, sage accents, gold hairline — the wedding palette, but plainly
+   laid out. It should read as the tool you reach for when the camera has let you down, not as an
+   equal partner to the scanner. */
+
+/* 0fr -> 1fr animates to whatever height the content happens to be, so nothing here has to guess a
+   max-height that a longer error message would outgrow. */
+.wrap{
+  display:grid;
+  grid-template-rows:0fr;
+  transition:grid-template-rows .32s cubic-bezier(.4,0,.2,1), opacity .24s ease;
+  opacity:0;
+  pointer-events:none;
+}
+.wrapOpen{
+  grid-template-rows:1fr;
+  opacity:1;
+  pointer-events:auto;
+}
+/* min-height:0 is what lets a grid row actually collapse to zero */
+.clip{ overflow:hidden; min-height:0; }
+
+.card{
+  display:flex; flex-direction:column;
+  padding:18px;
+  background:#fdfcf7;
+  border:1px solid rgba(212,175,55,0.45);
+  border-radius:20px;
+  box-shadow:0 18px 40px -30px rgba(30,40,22,0.75);
+}
+
+.head{ display:flex; align-items:flex-start; gap:11px; }
+.icon{
+  flex:none; display:block; width:22px; height:22px; margin-top:2px;
+  color:var(--admin-sage, #4a5a3c);
+}
+.icon svg{ display:block; width:100%; height:100%; }
+.title{
+  font-family:var(--sans); font-weight:600; font-size:16.5px; letter-spacing:-0.01em;
+  color:#1d2317;
+}
+.sub{
+  font-family:var(--sans); font-size:12.5px; line-height:1.55; color:#787c6f; margin-top:2px;
+}
+
+.label{
+  font-family:var(--sans); font-weight:500; font-size:12.5px;
+  color:var(--admin-sage, #4a5a3c);
+  margin-top:16px; margin-bottom:6px;
+}
+
+.input{
+  width:100%;
+  font-family:var(--sans); font-size:16px; letter-spacing:.1em;
+  color:#1d2317; background:#fff;
+  border:1px solid rgba(74,90,60,0.24); border-radius:13px;
+  padding:14px 15px;
+}
+.input::placeholder{ color:#b3b6ab; letter-spacing:.02em; }
+.input:focus{
+  outline:none; border-color:var(--admin-sage, #4a5a3c);
+  box-shadow:0 0 0 3px rgba(74,90,60,0.12);
+}
+.input:disabled{ opacity:.6; }
+
+.actions{ display:flex; flex-direction:column; gap:8px; margin-top:12px; }
+
+.verify{
+  display:inline-flex; align-items:center; justify-content:center; gap:9px;
+  font-family:var(--sans); font-weight:500; font-size:15px;
+  color:#f7f6f1; background:#1b1f16;
+  border:0; border-radius:13px; padding:15px 20px; cursor:pointer;
+  transition:opacity .2s ease, transform .15s ease;
+}
+.verify:disabled{ opacity:.4; cursor:default; }
+.verify:not(:disabled):active{ transform:scale(0.985); }
+
+.cancel{
+  font-family:var(--sans); font-size:13.5px;
+  color:#787c6f; background:none; border:0; padding:8px; cursor:pointer;
+}
+.cancel:disabled{ opacity:.5; cursor:default; }
+
+/* a ring with one lit quarter — no extra markup, no library */
+.spinner{
+  flex:none; width:15px; height:15px; border-radius:50%;
+  border:2px solid rgba(247,246,241,0.32);
+  border-top-color:#f7f6f1;
+  animation:spin .7s linear infinite;
+}
+@keyframes spin{ to{ transform:rotate(360deg); } }
+
+@media (prefers-reduced-motion: reduce){
+  .wrap{ transition:none; }
+  .verify{ transition:none; }
+  /* still shows it is working, just without the rotation */
+  .spinner{ animation:none; border-top-color:rgba(247,246,241,0.7); }
+}
