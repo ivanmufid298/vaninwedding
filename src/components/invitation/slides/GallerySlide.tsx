@@ -13,11 +13,11 @@ interface GallerySlideProps {
 
 // placeholder shots — swap these for the real photos when they're ready
 const PHOTOS = [
-  "/assets/wedding-stage.webp",
-  "/assets/wedding-entrance.webp",
-  "/assets/wedding-table.webp",
-  "/assets/welcome-sign.webp",
-  "/assets/venue.webp",
+  "/assets/photo-1.webp",
+  "/assets/photo-2.webp",
+  "/assets/photo-3.webp",
+  "/assets/photo-4.webp",
+  "/assets/photo-5.webp",
 ];
 
 function Chevron({ dir }: { dir: "prev" | "next" }) {
