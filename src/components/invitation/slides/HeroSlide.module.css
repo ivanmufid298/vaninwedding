@@ -72,7 +72,9 @@
 
 /* ---- crown: clipped to its artwork so spacing is predictable ---- */
 .crownWrap{
-  --v:40px;
+  /* --v is the visible height of the artwork, not of the file: the wrap crops the asset's
+     18.8% side and 8.7%/13.8% top-bottom transparent padding, so this is what actually shows. */
+  --v:72px;
   height:var(--v); width:calc(var(--v) * 0.803);
   overflow:hidden; display:flex; align-items:center; justify-content:center;
   margin:0 auto 12px; pointer-events:none;
@@ -100,13 +102,40 @@
   font-size:clamp(25px,6.6vw,42px); line-height:1.2; color:var(--hero-gold);
 }
 .amp{ display:block; font-size:0.6em; margin:1px 0; }
-.date{ font-family:var(--serif); font-size:16px; color:var(--hero-ink); }
-.venue{ font-family:var(--serif); font-size:16px; color:var(--hero-ink); margin-top:1px; }
+/* replaces the date/venue pair — those still appear in full on the Acara & Lokasi slide */
+.invite{
+  font-family:var(--serif); font-size:15.5px; line-height:1.65;
+  color:var(--hero-ink);
+  max-width:34ch; margin:0 auto;
+  text-wrap:balance;
+}
+/* the one personalised word on the page, so it carries a little more weight than the sentence */
+.inviteName{ font-weight:600; }
+
+@media (max-height:640px){
+  .invite{ font-size:14px; line-height:1.55; }
+}
 
 /* ---- stage photo ---- */
-.stageWrap{ display:flex; justify-content:center; margin-top:14px; }
+/* position:relative so the welcome sign can be placed against the stage's own box; absolute, so
+   adding it cannot change the hero's height — the slide is overflow:hidden and the content
+   already fits down to a 568px-tall screen. */
+.stageWrap{ position:relative; display:flex; justify-content:center; margin-top:14px; }
 /* capped just under 100vw so the stage never gets clipped by the slide's overflow:hidden */
 .stage{ width:min(112%,580px,98vw); display:block; }
+
+/* welcome-sign.webp: 1086x1448 (h = 1.333 x width), art padded 6.63% left and 2.21% bottom of its
+   own box — collapsed here so the offsets below describe where the easel actually lands, not
+   where its transparent margin does. Stands at the near-left of the stage, slightly in front. */
+.welcomeSign{
+  --sw:min(30%, 168px);
+  position:absolute; z-index:2;
+  width:var(--sw);
+  left:calc(var(--sw) * -0.066);
+  bottom:calc(var(--sw) * -0.0295);
+  display:block;
+  filter:drop-shadow(0 10px 14px rgba(80,64,40,0.18));
+}
 
 @media (max-width:380px){
   .eyebrow{ font-size:9.5px; letter-spacing:.22em; }
@@ -114,16 +143,17 @@
 
 /* short viewports: the slide is overflow:hidden, so keep the stack inside the fold */
 @media (max-height:700px){
-  .crownWrap{ --v:32px; margin-bottom:8px; }
+  .crownWrap{ --v:58px; margin-bottom:8px; }
   .divider{ --v:88px; margin:6px auto; }
   .dividerSm{ --v:60px; }
   .names{ font-size:clamp(22px,5.8vw,34px); }
   .date, .venue{ font-size:14px; }
   .stageWrap{ margin-top:10px; }
   .stage{ width:min(112%,500px,96vw); }
+  .welcomeSign{ --sw:min(31%, 132px); }
 }
 @media (max-height:600px){
-  .crownWrap{ --v:26px; margin-bottom:6px; }
+  .crownWrap{ --v:44px; margin-bottom:6px; }
   .divider{ --v:76px; margin:4px auto; }
   .dividerSm{ --v:52px; }
   .eyebrow{ font-size:10px; }

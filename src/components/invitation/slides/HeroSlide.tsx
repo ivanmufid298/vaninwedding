@@ -3,6 +3,7 @@
 /* eslint-disable @next/next/no-img-element */
 
 import { useFloralClick } from "../FloralClickContext";
+import { useGuest } from "../GuestContext";
 import styles from "./HeroSlide.module.css";
 
 interface HeroSlideProps {
@@ -12,6 +13,8 @@ interface HeroSlideProps {
 
 export default function HeroSlide({ className, innerClassName }: HeroSlideProps) {
   const handleFloralClick = useFloralClick();
+  // falls back to "Bapak/Ibu/Saudara/i" when the link carries no name, which reads fine here
+  const { displayName } = useGuest();
 
   return (
     <section className={`${className} ${styles.heroSection}`}>
@@ -71,13 +74,24 @@ export default function HeroSlide({ className, innerClassName }: HeroSlideProps)
           <img src="/assets/stroke.webp" alt="" />
         </div>
 
-        <div className={styles.date}>Minggu, 30 Agustus 2026</div>
-        <div className={styles.venue}>Saung Engkong Ano</div>
+        <p className={styles.invite}>
+          Dengan penuh kebahagiaan, kami mengundang{" "}
+          <span className={styles.inviteName}>{displayName}</span> untuk hadir dan
+          menjadi bagian dari hari istimewa kami.
+        </p>
 
         <div className={styles.stageWrap}>
           <img
             className={`${styles.stage} floral float`}
             src="/assets/wedding-stage.webp"
+            alt=""
+            onClick={handleFloralClick}
+          />
+          {/* d3 offsets the sway by -3.6s, so the sign and the stage never bob in lockstep —
+              two things rising and falling together read as one sheet of paper moving */}
+          <img
+            className={`${styles.welcomeSign} floral float d3`}
+            src="/assets/welcome-sign.webp"
             alt=""
             onClick={handleFloralClick}
           />

@@ -118,7 +118,7 @@ export default function DetailsSlide({ className, innerClassName }: DetailsSlide
           <img className={styles.crownTop} src="/assets/crown-loct.webp" alt="" />
 
           <h2 className={styles.title}>
-            Acara &amp; Lokasi
+            Waktu &amp; Tempat
           </h2>
 
           <img className={styles.crownBottom} src="/assets/crown-2-loct.webp" alt="" />
