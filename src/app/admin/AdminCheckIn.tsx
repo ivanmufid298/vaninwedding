@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import AccessCode from "@/components/admin/AccessCode";
+import InstallCard from "@/components/admin/InstallCard";
 import ManualEntryCard from "@/components/admin/ManualEntryCard";
 import Scanner, { type CameraState } from "@/components/admin/Scanner";
 import StatusCard, { type ScanRecord } from "@/components/admin/StatusCard";
@@ -314,6 +315,9 @@ export default function AdminCheckIn() {
       <p className={styles.foot}>
         Scanner berjalan terus — hasil muncul otomatis, tanpa menekan tombol.
       </p>
+
+      {/* last thing on the page, collapsed by default — see the component for why it is this quiet */}
+      <InstallCard />
 
       {verified && (
         <VerifiedOverlay
