@@ -33,10 +33,12 @@
 
 /* ---- crown, clipped to its artwork (62.3% wide / 77.5% tall of its frame) ---- */
 .crownWrap{
-  --v:clamp(22px,3.4vh,34px);
+  /* --v is the visible height of the artwork, not of the file: the wrap crops the asset's
+     18.8% side and 8.7%/13.8% top-bottom transparent padding, so this is what actually shows. */
+  --v:72px;
   height:var(--v); width:calc(var(--v) * 0.803);
   overflow:hidden; display:flex; align-items:center; justify-content:center;
-  margin:0 auto clamp(5px,0.9vh,9px); pointer-events:none;
+  margin:0 auto 12px; pointer-events:none;
 }
 .crown{ height:calc(var(--v) / 0.775); width:auto; max-width:none; flex:none; display:block; }
 
