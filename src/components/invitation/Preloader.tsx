@@ -13,7 +13,7 @@ export default function Preloader({ hidden }: PreloaderProps) {
     <div className={`${styles.preloader}${hidden ? ` ${styles.hidden}` : ""}`}>
       <div className={styles.markWrap}>
         <img className={styles.wreath} src="/assets/preload.webp" alt="" />
-        <div className={styles.mark}>I&nbsp;&amp;&nbsp;B</div>
+        <div className={styles.mark}>I&nbsp;&amp;B</div>
       </div>
       {/* reserves the space IntroLabel visually occupies at this point, and is the position
           IntroLabel measures itself against while in the preload phase */}
