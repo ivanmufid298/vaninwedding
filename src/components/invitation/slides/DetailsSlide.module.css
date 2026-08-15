@@ -1,21 +1,32 @@
 /* Dense slide: type and rhythm are sized in vh so the whole thing fits without clipping
    (the slide is overflow:hidden), and corner offsets come from each asset's measured alpha box. */
 
+/* Deck's .slideInner caps every slide's column at 520px — correct for the slides that must fit a
+   single screen, but it is also what kept this scrolling page to a narrow strip on a wide window.
+   .slideInner is the only <div> child of .page (the corner bouquets are <img>), so this lifts the
+   cap for this page alone without reaching into the deck's stylesheet. */
+.page > div{ max-width:none; width:100%; }
+
 .block{
   /* clears the fixed side controls: music toggle on the left, slide dots on the right */
-  max-width:min(340px, calc(100vw - 104px)); margin:0 auto;
+  width:100%; max-width:min(680px, 100%); margin:0 auto;
   padding-bottom:clamp(14px, 2.6vh, 30px);
 }
 
 /* thin inset frame, same treatment as the hero/gallery slides */
+.detailsSection{ padding:0; }
+
+/* thin inset frame, pinned to the window while the page scrolls behind it */
 .detailsSection::before{
-  content:""; position:absolute; inset:13px;
+  content:""; position:absolute; inset:13px; z-index:2;
   border:1px solid rgba(226,233,213,0.22);
   pointer-events:none; z-index:0;
 }
 
 /* ---- corner florals ---- */
-.corner{ position:absolute; z-index:1; }
+/* pointer-events:none so a gesture landing on one passes through to .scroller beneath —
+   otherwise the page refuses to scroll under each corner */
+.corner{ position:absolute; z-index:1; pointer-events:none; }
 /* top-loct.webp: measured alpha bbox is flush to the top edge (0%) and almost flush to its
    left/right (1.3%/0.1%), h/w 1.503 — so unlike the old top-left/right.webp this needs almost
    no outward bleed to sit snug in the corner. */
@@ -62,237 +73,170 @@
 .crownTop{
   /* matched to .footerBottom so the ornament closing the slide and the one opening it read
      at the same weight */
-  --cw:clamp(130px,48vw,260px); width:var(--cw);
+  --cw:clamp(108px,38vw,205px); width:var(--cw);
   margin-top:calc(var(--cw) * -0.1003);
   margin-bottom:calc(var(--cw) * -0.1447 + clamp(2px,0.5vh,6px));
 }
 /* crown-2-loct.webp: 2172x724, pad 31.77% top / 41.30% bottom, so height = 0.3333 × width */
 .crownBottom{
-  --cw:clamp(130px,34vw,215px); width:var(--cw);
+  --cw:clamp(112px,29vw,180px); width:var(--cw);
   margin-top:calc(var(--cw) * -0.1059 + clamp(3px,0.7vh,8px));
   margin-bottom:calc(var(--cw) * -0.1377 + clamp(3px,0.7vh,8px));
 }
 .intro{
-  font-family:var(--sans); font-size:clamp(9.5px,1.35vh,12.5px); line-height:1.6;
-  color:#e6e1cf; opacity:.88; margin-bottom:clamp(16px,2.9vh,30px);
+  font-family:var(--sans); font-size:clamp(9px,1.2vh,11.5px); line-height:1.5;
+  color:#e6e1cf; opacity:.88; margin-bottom:clamp(9px,1.6vh,17px);
 }
 
-/* ---- cards ---- */
-/* flex-start, not stretch: forcing the shorter card (Resepsi, one fewer row than Akad Nikah) to
-   match the taller one's height left a big slab of empty ivory at its bottom. Letting each card
-   size to its own content keeps the gap between the border and the text consistent instead. */
-/* the frame now lives inside each card's own box (see below), so unlike the old outline version
-   this gap is the gap you actually see — no halo to subtract */
-.cards{ display:flex; gap:clamp(5px,1.4vw,10px); align-items:flex-start; }
-
-/* Concave ("cekung") corners. A `border` or `outline` cannot follow a concave arc — clip-path
-   and mask only ever *cut*, they never stroke — so each gold line is a filled shape clipped to
-   the scooped outline instead:
-     .cardOuter::before  the outer hairline, a hollow 1px ring
-     .cardOuter padding  the gap, left empty so the slide's green shows through it
-     .cardInner          a gold slab whose edge reads as the inner hairline
-     .cardInner::before  the ivory fill, 1px inside that
-   The ring is one polygon: outer contour clockwise then inner contour counter-clockwise, so the
-   default nonzero fill rule cancels in the middle and leaves a real hole. Each quarter-scoop is a
-   5-point approximation of the circular arc. The clip sits on .cardInner rather than .cardOuter
-   because clip-path also clips an element's own pseudo-elements, which would eat the ring. */
-.cardOuter{
-  /* --badge is the medallion's *visible* diameter; .badge scales its box up from it.
-     --sc scoops the card edge, --so the outer line, --fg is the frame band the padding reserves.
-     --so runs a touch wider than --sc so the two arcs stay visually parallel around the corner. */
-  --badge:clamp(28px,4.7vh,38px); --sc:9px; --so:calc(var(--sc) + 2px); --fg:4px;
-  position:relative; flex:1 1 0; min-width:0; padding:var(--fg);
+/* ---- scrolling page ------------------------------------------------------------------------
+   Like the wishes slide, this page is deliberately taller than the viewport: the content is sized
+   for comfortable reading rather than squeezed to fit, and .scroller carries the overflow. */
+.scroller{
+  position:absolute; inset:0; z-index:1;
+  overflow-y:auto; overflow-x:hidden;
+  -webkit-overflow-scrolling:touch;
+  overscroll-behavior:contain;
+  /* the deck's scrollbar would sit on top of the inset frame */
+  scrollbar-width:none;
 }
-.cardWide{ margin-top:clamp(8px,1.6vh,15px); }
+.scroller::-webkit-scrollbar{ display:none; }
 
-.cardOuter::before{
-  content:""; position:absolute; inset:0; pointer-events:none; background:#ba8238;
-  clip-path:polygon(
-    0px calc(0px + 1*var(--so)), calc(0px + 0.38268*var(--so)) calc(0px + 0.92388*var(--so)),
-    calc(0px + 0.70711*var(--so)) calc(0px + 0.70711*var(--so)),
-    calc(0px + 0.92388*var(--so)) calc(0px + 0.38268*var(--so)), calc(0px + 1*var(--so)) 0px,
-    calc(100% - 0px - 1*var(--so)) 0px,
-    calc(100% - 0px - 0.92388*var(--so)) calc(0px + 0.38268*var(--so)),
-    calc(100% - 0px - 0.70711*var(--so)) calc(0px + 0.70711*var(--so)),
-    calc(100% - 0px - 0.38268*var(--so)) calc(0px + 0.92388*var(--so)),
-    calc(100% - 0px) calc(0px + 1*var(--so)), calc(100% - 0px) calc(100% - 0px - 1*var(--so)),
-    calc(100% - 0px - 0.38268*var(--so)) calc(100% - 0px - 0.92388*var(--so)),
-    calc(100% - 0px - 0.70711*var(--so)) calc(100% - 0px - 0.70711*var(--so)),
-    calc(100% - 0px - 0.92388*var(--so)) calc(100% - 0px - 0.38268*var(--so)),
-    calc(100% - 0px - 1*var(--so)) calc(100% - 0px), calc(0px + 1*var(--so)) calc(100% - 0px),
-    calc(0px + 0.92388*var(--so)) calc(100% - 0px - 0.38268*var(--so)),
-    calc(0px + 0.70711*var(--so)) calc(100% - 0px - 0.70711*var(--so)),
-    calc(0px + 0.38268*var(--so)) calc(100% - 0px - 0.92388*var(--so)),
-    0px calc(100% - 0px - 1*var(--so)), 0px calc(0px + 1*var(--so)),
-    1px calc(100% - 1px - 1*calc(var(--so) - 0.41px)),
-    calc(1px + 0.38268*calc(var(--so) - 0.41px)) calc(100% - 1px - 0.92388*calc(var(--so) - 0.41px)),
-    calc(1px + 0.70711*calc(var(--so) - 0.41px)) calc(100% - 1px - 0.70711*calc(var(--so) - 0.41px)),
-    calc(1px + 0.92388*calc(var(--so) - 0.41px)) calc(100% - 1px - 0.38268*calc(var(--so) - 0.41px)),
-    calc(1px + 1*calc(var(--so) - 0.41px)) calc(100% - 1px),
-    calc(100% - 1px - 1*calc(var(--so) - 0.41px)) calc(100% - 1px),
-    calc(100% - 1px - 0.92388*calc(var(--so) - 0.41px)) calc(100% - 1px - 0.38268*calc(var(--so) - 0.41px)),
-    calc(100% - 1px - 0.70711*calc(var(--so) - 0.41px)) calc(100% - 1px - 0.70711*calc(var(--so) - 0.41px)),
-    calc(100% - 1px - 0.38268*calc(var(--so) - 0.41px)) calc(100% - 1px - 0.92388*calc(var(--so) - 0.41px)),
-    calc(100% - 1px) calc(100% - 1px - 1*calc(var(--so) - 0.41px)),
-    calc(100% - 1px) calc(1px + 1*calc(var(--so) - 0.41px)),
-    calc(100% - 1px - 0.38268*calc(var(--so) - 0.41px)) calc(1px + 0.92388*calc(var(--so) - 0.41px)),
-    calc(100% - 1px - 0.70711*calc(var(--so) - 0.41px)) calc(1px + 0.70711*calc(var(--so) - 0.41px)),
-    calc(100% - 1px - 0.92388*calc(var(--so) - 0.41px)) calc(1px + 0.38268*calc(var(--so) - 0.41px)),
-    calc(100% - 1px - 1*calc(var(--so) - 0.41px)) 1px, calc(1px + 1*calc(var(--so) - 0.41px)) 1px,
-    calc(1px + 0.92388*calc(var(--so) - 0.41px)) calc(1px + 0.38268*calc(var(--so) - 0.41px)),
-    calc(1px + 0.70711*calc(var(--so) - 0.41px)) calc(1px + 0.70711*calc(var(--so) - 0.41px)),
-    calc(1px + 0.38268*calc(var(--so) - 0.41px)) calc(1px + 0.92388*calc(var(--so) - 0.41px)),
-    1px calc(1px + 1*calc(var(--so) - 0.41px)), 1px calc(100% - 1px - 1*calc(var(--so) - 0.41px)));
-}
-
-/* The medallion artwork fills only 77.44% of its square (measured: 793/1024 px, horizontally
-   centred), so the box is scaled up by 1/0.7744 to make the *visible* disc come out at --badge.
-   Centred on the card's own top edge (top:var(--fg), not 0) so it straddles the inner line.
-   Decorative only, so pointer-events:none keeps it from eating clicks meant for the card. */
-.badge{
-  position:absolute; top:var(--fg); left:50%;
-  width:calc(var(--badge) / 0.7744); height:auto;
-  transform:translate(-50%,-50%);
-  z-index:4; pointer-events:none; display:block;
-  /* these three medallions carry a semi-opaque 1px fringe around the full 1024px canvas
-     (alpha 81-95, alpha 0 just inside it) which rendered as a faint box outline around each
-     badge. The artwork starts at 9.4%, so trimming 2% kills the fringe and nothing else.
-     clip-path is visual only, so the centring maths above is unaffected. */
-  clip-path:inset(2%);
-}
-
-/* the card body: a gold slab whose edge is the inner hairline, with the ivory fill 1px inside.
-   z-index:0 makes it a stacking context so that fill can sit behind the text at z-index:-1. */
-.cardInner{
-  position:relative; z-index:0; background:#ba8238;
-  padding:clamp(13px,2.4vh,19px) clamp(10px,2.8vw,17px) clamp(15px,2.6vh,22px);
+/* full-bleed so the corner bouquets reach the page edges, with the reading padding here */
+.page{
+  position:relative; min-height:100%;
   display:flex; flex-direction:column; align-items:center;
-  clip-path:polygon(
-    0px calc(0px + 1*var(--sc)), calc(0px + 0.38268*var(--sc)) calc(0px + 0.92388*var(--sc)),
-    calc(0px + 0.70711*var(--sc)) calc(0px + 0.70711*var(--sc)),
-    calc(0px + 0.92388*var(--sc)) calc(0px + 0.38268*var(--sc)), calc(0px + 1*var(--sc)) 0px,
-    calc(100% - 0px - 1*var(--sc)) 0px,
-    calc(100% - 0px - 0.92388*var(--sc)) calc(0px + 0.38268*var(--sc)),
-    calc(100% - 0px - 0.70711*var(--sc)) calc(0px + 0.70711*var(--sc)),
-    calc(100% - 0px - 0.38268*var(--sc)) calc(0px + 0.92388*var(--sc)),
-    calc(100% - 0px) calc(0px + 1*var(--sc)), calc(100% - 0px) calc(100% - 0px - 1*var(--sc)),
-    calc(100% - 0px - 0.38268*var(--sc)) calc(100% - 0px - 0.92388*var(--sc)),
-    calc(100% - 0px - 0.70711*var(--sc)) calc(100% - 0px - 0.70711*var(--sc)),
-    calc(100% - 0px - 0.92388*var(--sc)) calc(100% - 0px - 0.38268*var(--sc)),
-    calc(100% - 0px - 1*var(--sc)) calc(100% - 0px), calc(0px + 1*var(--sc)) calc(100% - 0px),
-    calc(0px + 0.92388*var(--sc)) calc(100% - 0px - 0.38268*var(--sc)),
-    calc(0px + 0.70711*var(--sc)) calc(100% - 0px - 0.70711*var(--sc)),
-    calc(0px + 0.38268*var(--sc)) calc(100% - 0px - 0.92388*var(--sc)),
-    0px calc(100% - 0px - 1*var(--sc)));
-}
-.cardInner::before{
-  content:""; position:absolute; inset:1px; z-index:-1; background:#fffcf1;
-  clip-path:polygon(
-    1px calc(1px + 1*calc(var(--sc) - 0.41px)),
-    calc(1px + 0.38268*calc(var(--sc) - 0.41px)) calc(1px + 0.92388*calc(var(--sc) - 0.41px)),
-    calc(1px + 0.70711*calc(var(--sc) - 0.41px)) calc(1px + 0.70711*calc(var(--sc) - 0.41px)),
-    calc(1px + 0.92388*calc(var(--sc) - 0.41px)) calc(1px + 0.38268*calc(var(--sc) - 0.41px)),
-    calc(1px + 1*calc(var(--sc) - 0.41px)) 1px, calc(100% - 1px - 1*calc(var(--sc) - 0.41px)) 1px,
-    calc(100% - 1px - 0.92388*calc(var(--sc) - 0.41px)) calc(1px + 0.38268*calc(var(--sc) - 0.41px)),
-    calc(100% - 1px - 0.70711*calc(var(--sc) - 0.41px)) calc(1px + 0.70711*calc(var(--sc) - 0.41px)),
-    calc(100% - 1px - 0.38268*calc(var(--sc) - 0.41px)) calc(1px + 0.92388*calc(var(--sc) - 0.41px)),
-    calc(100% - 1px) calc(1px + 1*calc(var(--sc) - 0.41px)),
-    calc(100% - 1px) calc(100% - 1px - 1*calc(var(--sc) - 0.41px)),
-    calc(100% - 1px - 0.38268*calc(var(--sc) - 0.41px)) calc(100% - 1px - 0.92388*calc(var(--sc) - 0.41px)),
-    calc(100% - 1px - 0.70711*calc(var(--sc) - 0.41px)) calc(100% - 1px - 0.70711*calc(var(--sc) - 0.41px)),
-    calc(100% - 1px - 0.92388*calc(var(--sc) - 0.41px)) calc(100% - 1px - 0.38268*calc(var(--sc) - 0.41px)),
-    calc(100% - 1px - 1*calc(var(--sc) - 0.41px)) calc(100% - 1px),
-    calc(1px + 1*calc(var(--sc) - 0.41px)) calc(100% - 1px),
-    calc(1px + 0.92388*calc(var(--sc) - 0.41px)) calc(100% - 1px - 0.38268*calc(var(--sc) - 0.41px)),
-    calc(1px + 0.70711*calc(var(--sc) - 0.41px)) calc(100% - 1px - 0.70711*calc(var(--sc) - 0.41px)),
-    calc(1px + 0.38268*calc(var(--sc) - 0.41px)) calc(100% - 1px - 0.92388*calc(var(--sc) - 0.41px)),
-    1px calc(100% - 1px - 1*calc(var(--sc) - 0.41px)));
+  padding:clamp(40px,9vh,74px) clamp(24px,7vw,48px) clamp(48px,11vh,88px);
 }
 
-.cardTitle{
-  font-family:var(--serif); font-weight:600; text-transform:uppercase;
-  font-size:clamp(11.5px,1.75vh,16px); letter-spacing:.08em; color:var(--sage-dark);
-  line-height:1.2;
+/* ---- countdown ---- */
+.countdown{ margin-top:clamp(16px,3vh,28px); }
+.countdownLabel{
+  display:flex; align-items:center; justify-content:center; gap:10px;
+  font-family:var(--sans); font-size:clamp(10px,2.6vw,12px);
+  letter-spacing:.24em; text-transform:uppercase; color:var(--gold-soft);
 }
-/* Gilded dividers. Both assets are ~42%/34% transparent padding top and bottom, so the negative
-   margins collapse that dead space and the visible gap is what's actually written here. */
-.cardRule, .dateRule{ display:block; margin-left:auto; margin-right:auto; pointer-events:none; }
-/* akad-resepsi-loct.webp: 2216x709 (h = 0.3199 x width), pad 42.03% top / 42.17% bottom */
-.cardRule{
-  --rw:64%; width:var(--rw);
-  margin-top:calc(var(--rw) * -0.1345 + clamp(3px,0.6vh,7px));
-  margin-bottom:calc(var(--rw) * -0.1349 + clamp(3px,0.6vh,7px));
+.countdownRule{
+  flex:1 1 0; max-width:56px; height:1px;
+  background:linear-gradient(90deg, transparent, rgba(226,203,154,0.6), transparent);
 }
-/* date-loct.webp: 2172x724 (h = 0.3333 x width), pad 39.78% top / 42.13% bottom */
-.dateRule{
-  --rw:88%; width:var(--rw);
-  margin-top:calc(var(--rw) * -0.1326 + clamp(4px,0.8vh,9px));
-  margin-bottom:calc(var(--rw) * -0.1404 + clamp(4px,0.8vh,9px));
+.clock{
+  display:flex; align-items:flex-start; justify-content:center;
+  margin-top:clamp(10px,2vh,18px);
 }
-
-/* left-aligned, not centered: with the date wrapping to two lines, a centered shrink-wrapped row
-   put its icon and its text visibly out of step with each other — icon pinned to the row's own
-   left edge, but that edge drifting wherever the widest wrapped line happened to land. Anchoring
-   the whole row to the card's left edge keeps the icon column consistent line to line.
-   text-align:left overrides the slide-wide text-align:center (Deck.module.css) that every slide
-   inherits — without it, a wrapped second line re-centers itself under the first instead of
-   staying flush with it. */
-/* nowrap: "Minggu, 30 Agustus 2026" is the longest line any card has to show, so it sets the
-   floor for this font-size — sized to fit that on one line rather than wrapping "2026" down. */
-.row, .venue{
-  display:flex; align-items:center; justify-content:flex-start; align-self:flex-start; gap:4px;
-  font-family:var(--sans); font-size:clamp(7px,1vh,9.5px); line-height:1.45; white-space:nowrap;
-  color:#5f5238; margin-top:clamp(3px,0.7vh,7px); text-align:left;
+.unit{
+  position:relative;
+  display:flex; flex-direction:column; align-items:center;
+  flex:1 1 0; min-width:0;
+  padding:0 clamp(6px,2.4vw,16px);
 }
-/* sized to sit on one line inside the narrow event cards rather than wrapping to two */
-.venue{
-  font-weight:500; color:var(--sage-dark); text-transform:uppercase; letter-spacing:.01em;
-  font-size:clamp(7.5px,1.02vh,9.5px); white-space:nowrap;
+/* the plain rule between figures, as asked — no ornament */
+.tick{
+  position:absolute; left:0; top:8%; width:1px; height:62%;
+  background:rgba(226,203,154,0.4);
 }
-.rowIcon{ flex:none; width:clamp(8px,1.2vh,11px); height:clamp(8px,1.2vh,11px); color:var(--gold); }
-.rowIcon svg{ width:100%; height:100%; display:block; }
-
-.address{
-  font-family:var(--sans); font-size:clamp(7px,0.98vh,9.5px); line-height:1.42;
-  color:#6d5c40; opacity:.9; text-align:center;
-  margin-top:clamp(1px,0.3vh,4px); margin-bottom:clamp(6px,1.1vh,11px);
+.value{
+  font-family:var(--serif); font-weight:500;
+  font-size:clamp(30px,9.5vw,50px); line-height:1.05; color:#f6efdc;
+}
+.unitName{
+  font-family:var(--sans); font-size:clamp(9.5px,2.5vw,12px);
+  color:var(--gold-soft); opacity:.9; margin-top:5px;
 }
 
-/* pill outline like the reference; nowrap keeps it to a single line inside the narrow cards */
+/* ---- info rows ---- */
+/* Text and artwork side by side, alternating which side the artwork falls on. The artwork is a
+   transparent cutout, so it sits straight on the green with a drop shadow rather than a frame. */
+.info{
+  display:flex; align-items:center; gap:clamp(12px,3.2vw,26px);
+  width:100%; margin-top:clamp(18px,3.4vh,32px);
+}
+/* row-reverse rather than reordering the markup, so the text stays first in the reading order */
+.infoFlip{ flex-direction:row-reverse; }
+/* 45 / 55 in favour of the artwork, as asked */
+.infoText{ flex:45 1 0; min-width:0; text-align:center; }
+.infoArt{
+  flex:55 1 0; min-width:0; width:100%; height:auto; display:block;
+  pointer-events:none;
+  /* a cutout has no box to cast from, so the shadow follows the artwork's own alpha */
+  filter:drop-shadow(0 10px 14px rgba(12,18,8,0.45));
+}
+/* flower-bouquet.webp's artwork fills only 81% of its box (9%/10% clear at the sides), so at the
+   same column width it reads noticeably smaller than the other two, whose ink runs to the edges
+   (96% and 100%). A transform, not width + negative margins: a negative margin shrinks the item's
+   outer size, which quietly hands the difference to the text column and made this row's measure
+   wider than its neighbours'. transform scales the pixels and leaves the flex maths untouched. */
+.artBouquet{ transform:scale(1.1); }
+
+.eyebrow{
+  font-family:var(--script); font-size:clamp(22px,6vw,30px); line-height:1;
+  color:var(--gold-soft);
+}
+.infoTitle{
+  font-family:var(--serif); font-weight:500; text-transform:uppercase;
+  font-size:clamp(21px,5.8vw,31px); line-height:1.15; letter-spacing:.05em;
+  color:#f6efdc; margin-top:2px;
+}
+/* footer-2-loct.webp: 2172x724 (h = 0.3333 x width), 33.7% transparent padding top and bottom —
+   collapsed so the written gaps are the ones that show */
+.infoRule{
+  --rw:min(78%, 150px);
+  display:block; width:var(--rw); margin-left:auto; margin-right:auto;
+  margin-top:calc(var(--rw) * -0.1123 + clamp(6px,1.2vh,12px));
+  margin-bottom:calc(var(--rw) * -0.1123 + clamp(6px,1.2vh,12px));
+  pointer-events:none;
+}
+
+.row{
+  display:flex; align-items:flex-start; justify-content:flex-start; gap:8px;
+  font-family:var(--sans); font-size:clamp(11.5px,3.1vw,13.5px); line-height:1.5;
+  color:#e6e1cf; margin-top:clamp(4px,0.8vh,7px); text-align:left;
+}
+.rowCenter{ justify-content:center; }
+.rowIcon{
+  /* nudged so it reads as centred on the first line rather than flush to its top */
+  flex:none; width:clamp(15px,4vw,18px); height:clamp(15px,4vw,18px); margin-top:1px;
+  color:var(--gold-soft);
+}
+.rowIcon svg{ display:block; width:100%; height:100%; }
+.venue{ display:block; font-weight:500; color:#f6efdc; letter-spacing:.02em; }
+.address{ display:block; color:#ded7c3; opacity:.85; margin-top:1px; }
+
+.bigTime{
+  font-family:var(--serif); font-weight:500; font-size:clamp(17px,4.6vw,22px);
+  color:#f6efdc; letter-spacing:.02em;
+}
+.note{
+  font-family:var(--sans); font-size:clamp(11px,3vw,13px); line-height:1.65;
+  color:#ded7c3; opacity:.9; margin-top:clamp(6px,1.2vh,11px);
+}
+
+.venueLead{
+  font-family:var(--sans); font-weight:500; font-size:clamp(12.5px,3.4vw,15px);
+  color:#f6efdc; letter-spacing:.02em;
+}
+.addressFull{
+  font-family:var(--sans); font-size:clamp(11px,3vw,13px); line-height:1.65;
+  color:#ded7c3; opacity:.88; margin-top:4px;
+}
+
 .mapBtn{
-  display:inline-flex; align-items:center; justify-content:center; gap:4px;
-  /* auto pushes the pill to the card's bottom so both cards' buttons line up;
-     the gap above comes from .address's margin, since margin-block-start here would
-     override the auto and break that alignment */
-  margin-top:auto; padding:clamp(4px,0.7vh,7px) clamp(5px,1.3vw,9px);
-  border:1px solid rgba(186,130,56,0.5); border-radius:999px;
-  font-family:var(--sans); font-size:clamp(6.5px,0.9vh,9px);
-  letter-spacing:.03em; text-transform:uppercase; color:#a8823c;
-  text-decoration:none; white-space:nowrap; max-width:100%;
+  display:inline-flex; align-items:center; gap:7px;
+  margin-top:clamp(9px,1.8vh,16px);
+  font-family:var(--sans); font-size:clamp(10.5px,2.8vw,12.5px); letter-spacing:.04em;
+  color:#f2ecd9; text-decoration:none; white-space:nowrap;
+  border:1px solid rgba(226,203,154,0.55); border-radius:999px;
+  padding:9px 14px;
+  transition:background .25s ease;
 }
-.mapBtnIcon{ flex:none; width:clamp(8px,1.1vh,11px); height:clamp(8px,1.1vh,11px); }
-.mapBtnIcon svg{ width:100%; height:100%; display:block; }
+.mapBtn:hover{ background:rgba(255,253,244,0.08); }
+.mapBtnIcon{ flex:none; width:14px; height:14px; color:var(--gold-soft); }
+.mapBtnIcon svg{ display:block; width:100%; height:100%; }
 
-/* ---- wide location card ---- */
-.wideRow{ display:flex; gap:clamp(8px,2.4vw,16px); align-items:center; width:100%; }
-.wideInfo{ flex:1 1 0; min-width:0; display:flex; flex-direction:column; align-items:center; }
-/* this card's venue name has no icon in front of it (unlike the event cards), so it stays
-   centered under the "Lokasi" title instead of picking up the icon-row left-align */
-.wideInfo .venue{ align-self:center; justify-content:center; }
-/* photo-album mount: a deeper margin along the bottom edge like a print, a soft drop shadow,
-   and a slight tilt so it reads as a photograph laid on the card rather than an inline image */
-.snapshot{
-  /* the tilt swells the rotated bounding box by height x sin(2.2°) ≈ 2px per side, which
-     .cardInner's clip-path would shave off the corner — this inset absorbs it */
-  flex:1 1 0; min-width:0; margin:0 3px; align-self:center;
-  background:#fffdf8; padding:4px 4px 13px;
-  border:1px solid rgba(189,143,69,0.28); border-radius:2px;
-  box-shadow:0 4px 11px -4px rgba(61,74,48,0.38);
-  transform:rotate(-2.2deg);
-}
-.snapshot img{
-  display:block; width:100%; height:auto;
-  aspect-ratio:1.32; object-fit:cover; border-radius:1px;
+/* hairline between the info rows */
+.divider{
+  display:block; width:min(72%, 240px); height:1px;
+  margin:clamp(16px,3vh,28px) auto 0;
+  background:linear-gradient(90deg, transparent, rgba(226,203,154,0.45), transparent);
 }
 
 /* ---- footer ---- */
@@ -300,59 +244,77 @@
 .footerTop, .footerBottom{ display:block; margin-left:auto; margin-right:auto; pointer-events:none; }
 /* footer-1-loct.webp: 2205x713 (h = 0.3234 x width), pad 39.69% top / 43.34% bottom */
 .footerTop{
-  --rw:clamp(120px,44vw,240px); width:var(--rw);
-  margin-top:calc(var(--rw) * -0.1283 + clamp(16px,3vh,32px));
+  --rw:clamp(104px,36vw,196px); width:var(--rw);
+  margin-top:calc(var(--rw) * -0.1283 + clamp(9px,1.7vh,18px));
   margin-bottom:calc(var(--rw) * -0.1401 + clamp(3px,0.6vh,7px));
 }
 /* footer-2-loct.webp: 2172x724 (h = 0.3333 x width), pad 33.7% top and bottom */
 .footerBottom{
-  --rw:clamp(130px,48vw,260px); width:var(--rw);
-  margin-top:calc(var(--rw) * -0.1123 + clamp(4px,0.8vh,9px));
+  --rw:clamp(112px,39vw,210px); width:var(--rw);
+  margin-top:calc(var(--rw) * -0.1123 + clamp(3px,0.6vh,7px));
   margin-bottom:calc(var(--rw) * -0.1123);
 }
 .closing{
-  font-family:var(--sans); font-size:clamp(8.5px,1.15vh,11px); line-height:1.55;
+  font-family:var(--sans); font-size:clamp(8px,1.05vh,10px); line-height:1.45;
   color:#e6e1cf; opacity:.85;
 }
 
-@media (max-height:680px){
-  .intro{ line-height:1.4; margin-bottom:6px; }
-  .closing{ line-height:1.32; }
-  .address{ line-height:1.3; margin-bottom:4px; }
-  .cardInner{ padding:9px 9px 13px; }
-  .cardWide{ margin-top:8px; }
-  .row, .venue{ margin-top:1px; }
-  .mapBtn{ padding:3px 6px; }
+/* The page scrolls now, so nothing here is fighting for vertical room any more — these only keep
+   the type and the decoration sensible on a narrow screen. */
+@media (max-width:360px){
+  .cornerTL, .cornerTR{ --w:min(38vw,140px); }
+  .cornerBL, .cornerBR{ --w:min(48vw,180px); }
+  /* the columns get tight below this, so the artwork gives up a little — but stays a column,
+     not a thumbnail */
+  .infoText{ flex:50 1 0; }
+  .infoArt{ flex:50 1 0; }
+  .unit{ padding:0 5px; }
 }
 
-/* smallest phones: pull the decoration in and step the type down so the cards keep the room */
+/* very short screens: the header alone would otherwise fill the first view */
 @media (max-height:600px){
-  .cornerTL, .cornerTR{ --w:min(34vw,150px); }
-  .cornerBL, .cornerBR{ --w:min(38vw,165px); }
-  .crownTop{ --cw:130px; }
-  .crownBottom{ --cw:115px; }
-  .block{ padding-bottom:4px; }
-  .title{ font-size:14px; }
-  .intro{ font-size:7.5px; line-height:1.3; margin-bottom:5px; }
-  .cardOuter{ --badge:24px; --sc:7px; --fg:3px; }
-  .cardInner{ padding:9px 9px 13px; }
-  .cardWide{ margin-top:7px; }
-  .cardTitle{ font-size:9px; }
-  .row, .venue{ font-size:7px; margin-top:0; }
-  .address{ font-size:6.5px; line-height:1.25; margin-bottom:3px; }
-  .mapBtn{ font-size:6.5px; padding:2px 6px; }
-  .closing{ font-size:7px; line-height:1.3; }
-  .footerTop{ --rw:120px; }
-  .footerBottom{ --rw:130px; }
-  /* dropping the pin frees enough width for the venue to sit on one line instead of two */
-  .cardOuter:not(.cardWide) .venue .rowIcon{ display:none; }
-  .cardWide .address{ font-size:7px; line-height:1.3; }
-  .intro{ font-size:8px; }
-  .closing{ font-size:7.5px; }
-  .snapshot{ padding:3px 3px 9px; }
+  .crownTop{ --cw:150px; }
+  .crownBottom{ --cw:130px; }
+  .countdown{ margin-top:14px; }
 }
 
-/* Clears the half of the badge that hangs into the card. Declared after both breakpoints because
-   their `padding: <shorthand>` sets all four sides — putting this up with the other .cardInner
-   rules would let them silently reset it. */
-.cardInner{ padding-top:calc(var(--badge) * 0.5 + clamp(6px,1.1vh,11px)); }
+
+/* ---- wide screens ------------------------------------------------------------------------------
+   Everything above is sized mobile-first in vw/vh, which is right for a phone but leaves a tall
+   narrow ribbon down the middle of a laptop. From here the measure opens up and the type and
+   artwork scale with it, so the page fills the window instead of floating in it. These sizes are
+   scoped to the breakpoint and never reach the phone layout. */
+@media (min-width:820px){
+  .block{ max-width:min(940px, 100%); }
+  .page{ padding-left:clamp(48px,6vw,96px); padding-right:clamp(48px,6vw,96px); }
+
+  .title{ font-size:44px; }
+  .intro{ font-size:16px; max-width:52ch; margin-left:auto; margin-right:auto; }
+
+  .countdown{ margin-top:38px; }
+  .value{ font-size:60px; }
+  .unitName{ font-size:14px; }
+  .countdownLabel{ font-size:13px; }
+  .countdownRule{ max-width:110px; }
+
+  .info{ gap:56px; margin-top:56px; }
+  .eyebrow{ font-size:36px; }
+  .infoTitle{ font-size:40px; }
+  .infoRule{ --rw:min(72%, 230px); }
+  .row{ font-size:16px; margin-top:10px; }
+  .rowIcon{ width:21px; height:21px; }
+  .bigTime{ font-size:28px; }
+  .note{ font-size:15.5px; }
+  .venueLead{ font-size:19px; }
+  .addressFull{ font-size:15.5px; }
+  .mapBtn{ font-size:14px; padding:12px 22px; }
+  .divider{ width:min(60%, 420px); margin-top:44px; }
+
+  .closing{ font-size:14px; max-width:60ch; margin-left:auto; margin-right:auto; }
+  .footerTop{ --rw:clamp(180px,20vw,280px); }
+  .footerBottom{ --rw:clamp(190px,21vw,300px); }
+
+  /* the corner bouquets scale with the window rather than staying phone-sized in a corner */
+  .cornerTL, .cornerTR{ --w:min(26vw,320px); }
+  .cornerBL, .cornerBR{ --w:min(30vw,380px); }
+}

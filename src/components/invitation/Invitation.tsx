@@ -186,15 +186,27 @@ export default function Invitation() {
     let wheelLock = 0;
     let touchY: number | null = null;
 
-    /* One slide (wishes & gift) is taller than the viewport and scrolls its own content. It marks
-       its scroller with [data-slide-scroll]; while that slide is the active one, a gesture towards
+    /* Some slides are taller than the viewport and scroll their own content. Each marks its
+       scroller with [data-slide-scroll]; while such a slide is the active one, a gesture towards
        content it hasn't reached yet belongs to the scroller, not to the deck. Only the active slide
-       has visibility:visible, so that alone identifies whether the scroller is on screen — no slide
-       index is hard-coded here. */
+       has visibility:visible, so that alone identifies which scroller is on screen — no slide index
+       is hard-coded here.
+
+       querySelectorAll, not querySelector: with more than one scrolling slide the single-element
+       version would always test the first one in the DOM and report the wrong answer for every
+       other. */
+    /* A slide can put something modal on screen — the gallery's lightbox does. These handlers are
+       bound to window, so without this a swipe or an arrow key over the overlay would change slide
+       behind it. The marker is a data attribute for the same reason as the scroller one: no slide
+       index, no shared state, just a fact about the DOM. */
+    const deckLocked = () => document.querySelector("[data-deck-lock]") !== null;
+
     const scrollingSlide = () => {
-      const el = document.querySelector<HTMLElement>("[data-slide-scroll]");
-      if (!el) return null;
-      return getComputedStyle(el).visibility === "visible" ? el : null;
+      const all = document.querySelectorAll<HTMLElement>("[data-slide-scroll]");
+      for (const el of all) {
+        if (getComputedStyle(el).visibility === "visible") return el;
+      }
+      return null;
     };
 
     // 2px of slack: fractional scroll heights mean scrollTop rarely lands exactly on the end
@@ -207,7 +219,7 @@ export default function Invitation() {
     };
 
     const handleWheel = (e: WheelEvent) => {
-      if (!deckReadyRef.current) return;
+      if (!deckReadyRef.current || deckLocked()) return;
       const now = Date.now();
       if (now - wheelLock < 900) return;
       if (Math.abs(e.deltaY) < 12) return;
@@ -218,11 +230,11 @@ export default function Invitation() {
     };
 
     const handleTouchStart = (e: TouchEvent) => {
-      touchY = e.touches[0].clientY;
+      touchY = deckLocked() ? null : e.touches[0].clientY;
     };
 
     const handleTouchEnd = (e: TouchEvent) => {
-      if (!deckReadyRef.current || touchY === null) return;
+      if (!deckReadyRef.current || touchY === null || deckLocked()) return;
       const dy = touchY - e.changedTouches[0].clientY;
       touchY = null;
       if (Math.abs(dy) <= 45) return;
@@ -232,7 +244,7 @@ export default function Invitation() {
     };
 
     const handleKeydown = (e: KeyboardEvent) => {
-      if (!deckReadyRef.current) return;
+      if (!deckReadyRef.current || deckLocked()) return;
       // typing a wish must not page the deck away mid-sentence
       const el = e.target as HTMLElement | null;
       if (el && (el.tagName === "TEXTAREA" || el.tagName === "INPUT" || el.isContentEditable)) return;

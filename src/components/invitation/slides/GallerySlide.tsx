@@ -2,7 +2,8 @@
 
 /* eslint-disable @next/next/no-img-element */
 
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { useFloralClick } from "../FloralClickContext";
 import styles from "./GallerySlide.module.css";
 
@@ -41,7 +42,19 @@ function Chevron({ dir }: { dir: "prev" | "next" }) {
 export default function GallerySlide({ className, innerClassName }: GallerySlideProps) {
   const handleFloralClick = useFloralClick();
   const [idx, setIdx] = useState(0);
+  /* which photo the lightbox is showing, or null when it is closed. Held as an index rather than a
+     src so the overlay always tracks the same photo the carousel is featuring. */
+  const [openAt, setOpenAt] = useState<number | null>(null);
   const n = PHOTOS.length;
+
+  useEffect(() => {
+    if (openAt === null) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setOpenAt(null);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [openAt]);
 
   const go = useCallback(
     (step: number) => setIdx((i) => (i + step + n) % n),
@@ -98,7 +111,15 @@ export default function GallerySlide({ className, innerClassName }: GallerySlide
               return (
                 <div className={cls} key={src}>
                   {/* async decoding keeps a photo's decode off the frame that reveals the slide */}
-                  <img className={styles.photo} src={src} alt="" decoding="async" />
+                  <img
+                    className={`${styles.photo}${off === 0 ? ` ${styles.photoOpenable}` : ""}`}
+                    src={src}
+                    alt=""
+                    decoding="async"
+                    /* only the featured photo opens — tapping a dimmed neighbour is how you
+                       change slides, not how you enlarge one */
+                    onClick={off === 0 ? () => setOpenAt(i) : undefined}
+                  />
                   {/* dims the neighbours by compositing one flat colour, rather than running a
                       brightness/saturate filter over the whole bitmap every frame */}
                   <span className={styles.shade} aria-hidden="true" />
@@ -143,6 +164,48 @@ export default function GallerySlide({ className, innerClassName }: GallerySlide
               />
             ))}
           </div>
+
+          {openAt !== null &&
+            /* Portalled to <body> rather than rendered in place. .deck is position:fixed with
+               z-index:10, which makes it a stacking context — inside it no z-index can rise above
+               the dots, music toggle and scroll cue (z-index 60), which are the deck's siblings.
+               The overlay only ever mounts from a click, so this never runs during SSR. */
+            createPortal(
+              /* data-deck-lock tells the deck's wheel/touch/key handlers to stand down while this
+                 is up — they listen on window, so without it a swipe over the overlay would change
+                 slide behind it. */
+              <div
+                className={styles.lightbox}
+                data-deck-lock
+                role="dialog"
+                aria-modal="true"
+                aria-label="Foto diperbesar"
+                /* closes only on the backdrop itself; a click that lands on the photo bubbles up
+                   with a different target and is ignored */
+                onClick={(e) => {
+                  if (e.target === e.currentTarget) setOpenAt(null);
+                }}
+              >
+                <button
+                  type="button"
+                  className={styles.lightboxClose}
+                  onClick={() => setOpenAt(null)}
+                  aria-label="Tutup foto"
+                >
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path
+                      d="m7 7 10 10M17 7 7 17"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.7"
+                      strokeLinecap="round"
+                    />
+                  </svg>
+                </button>
+                <img className={styles.lightboxPhoto} src={PHOTOS[openAt]} alt="" />
+              </div>,
+              document.body
+            )}
 
           <div className={styles.aboutHead}>
             <span className={styles.aboutRule}>
