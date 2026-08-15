@@ -69,7 +69,7 @@ export default function Envelope({ open, hidden, onOpen }: EnvelopeProps) {
         {/* Layer order matters: the letter sits *behind* the body so the envelope reads as
             sealed, and it is a sibling (not a child) so sliding it out isn't clipped. */}
         <div className={styles.letter}>
-          <span className={styles.letterMono}>I&nbsp;&amp;&nbsp;B</span>
+          <span className={styles.letterMono}>I&nbsp;&amp;B</span>
         </div>
         <div className={styles.envBody}>
           {/* faint paper motif, clipped to the envelope; top-left piece reused rotated for bottom-right */}
