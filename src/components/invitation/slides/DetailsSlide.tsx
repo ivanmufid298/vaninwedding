@@ -194,10 +194,10 @@ export default function DetailsSlide({ className, innerClassName }: DetailsSlide
                     </span>
                   </p>
                 </div>
-                <img className={styles.infoArt} src="/assets/wedding-table.webp" alt="" />
+                <img className={styles.infoArt} src="/assets/ring-box.webp" alt="" />
               </section>
 
-              <span className={styles.divider} aria-hidden="true" />
+              <img className={styles.divider} src="/assets/date-loct.webp" alt="" />
 
               {/* artwork first, so the bouquet sits on the left as in the design */}
               <section className={`${styles.info} ${styles.infoFlip}`}>
@@ -210,7 +210,7 @@ export default function DetailsSlide({ className, innerClassName }: DetailsSlide
                     <span className={styles.rowIcon}>
                       <Icon name="clock" />
                     </span>
-                    <span className={styles.bigTime}>12.30 WIB</span>
+                    <span className={styles.row}>12.30 WIB</span>
                   </p>
                   <p className={styles.note}>
                     Jangan lupa untuk berdiri di barisan depan dan bersiap mendapatkan
@@ -224,7 +224,7 @@ export default function DetailsSlide({ className, innerClassName }: DetailsSlide
                 />
               </section>
 
-              <span className={styles.divider} aria-hidden="true" />
+              <img className={styles.divider} src="/assets/date-loct.webp" alt="" />
 
               <section className={styles.info}>
                 <div className={styles.infoText}>
