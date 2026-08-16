@@ -3,9 +3,11 @@
 
 /* Deck's .slideInner caps every slide's column at 520px — correct for the slides that must fit a
    single screen, but it is also what kept this scrolling page to a narrow strip on a wide window.
-   .slideInner is the only <div> child of .page (the corner bouquets are <img>), so this lifts the
-   cap for this page alone without reaching into the deck's stylesheet. */
-.page > div{ max-width:none; width:100%; }
+   .page now has two <div> children — .frame and .slideInner (the corner bouquets are <img>) — so
+   :not(.frame) keeps this scoped to the wrapper it was meant for; without it, width:100% also
+   landed on .frame and fought its inset:13px, pushing the right edge off past .scroller's
+   overflow:hidden and losing that side of the border. */
+.page > div:not(.frame){ max-width:none; width:100%; }
 
 .block{
   /* clears the fixed side controls: music toggle on the left, slide dots on the right */
@@ -13,14 +15,16 @@
   padding-bottom:clamp(14px, 2.6vh, 30px);
 }
 
-/* thin inset frame, same treatment as the hero/gallery slides */
 .detailsSection{ padding:0; }
 
-/* thin inset frame, pinned to the window while the page scrolls behind it */
-.detailsSection::before{
-  content:""; position:absolute; inset:13px; z-index:2;
+/* thin inset frame, drawn around the whole document rather than around the window: it belongs to
+   the page like the corner bouquets do (see .corner below), so it holds its place against the
+   content instead of sliding across it as you scroll — same construction as the wishes slide's
+   .frame, which is why this lives inside .page now instead of as a ::before on the section. */
+.frame{
+  position:absolute; inset:13px; z-index:2;
   border:1px solid rgba(226,233,213,0.22);
-  pointer-events:none; z-index:0;
+  pointer-events:none;
 }
 
 /* ---- corner florals ---- */

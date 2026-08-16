@@ -130,6 +130,10 @@ export default function DetailsSlide({ className, innerClassName }: DetailsSlide
           been scrolled to the matching end. */}
       <div className={styles.scroller} data-slide-scroll>
         <div className={styles.page}>
+          {/* The thin inset frame, drawn around the whole document rather than around the window:
+              it belongs to the page like the corner bouquets do, so it holds its place against
+              the content instead of sliding across it as you scroll. */}
+          <div className={styles.frame} />
           {/* The same corner bouquets as before, now anchored to the ends of the document rather
               than to the window — pinned to the viewport they would hover over the middle of a
               page this long. top-loct.webp is drawn as a top-RIGHT piece (its floral mass sits at
