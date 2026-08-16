@@ -16,7 +16,7 @@ const ADDRESS = "Jl. M. Sanun No.44-46, Harapan Jaya, Kec. Cibinong, Kabupaten B
 // the resepsi block sits beside its artwork at roughly half the page width, where the full address
 // runs to four lines — it shows the locality, and the Lokasi block carries the address in full
 const ADDRESS_SHORT = "Cibinong, Kabupaten Bogor";
-const MAPS_URL = "https://maps.app.goo.gl/piqenm66dZRpBkD39?g_st=ic";
+const MAPS_URL = "https://www.google.com/maps/search/?api=1&query=-6.4583519,106.833732";
 
 /** the moment the countdown runs to — resepsi, 11.00 WIB (UTC+7) on the wedding day */
 const EVENT_AT = Date.parse("2026-08-30T11:00:00+07:00");
