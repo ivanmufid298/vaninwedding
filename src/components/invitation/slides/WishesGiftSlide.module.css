@@ -251,7 +251,9 @@
 .wishName{
   font-family:var(--serif); font-weight:600; font-size:clamp(14.5px,4vw,17px);
   color:var(--sage-dark); line-height:1.2;
-  overflow-wrap:break-word;
+  /* one line, always: a second line here would push the rule and date down and break the fixed
+     card height every other rule in this file is protecting */
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
 }
 /* --lines fixes the paragraph's height whether or not the wish fills it: min-height keeps a short
    wish from pulling the rule and date up, line-clamp keeps a long one from pushing them down, so
@@ -266,11 +268,6 @@
   overflow:hidden;
   min-height:calc(var(--lines) * 1.55em);
 }
-/* expanded: the clamp lifts and the card grows — a deliberate tap, so the height change is wanted */
-.wishTextOpen{
-  -webkit-line-clamp:unset; line-clamp:unset; overflow:visible; min-height:0;
-}
-
 /* reserved on every card, revealed only where the wish actually overflows */
 .more{
   align-self:center; margin-top:clamp(4px,1.2vw,7px);
@@ -467,4 +464,82 @@
 @media (prefers-reduced-motion: reduce){
   /* the ring still marks the new card, it just does not travel */
   .wishNew .wishCard{ animation:none; box-shadow:0 9px 20px -12px rgba(0,0,0,0.45), 0 0 0 3px rgba(212,175,55,0.4); }
+}
+
+
+/* ---- wish popup -------------------------------------------------------------------------------
+   Opened by "Selengkapnya"; closed by the backdrop, the × or Escape. Same construction as the
+   gallery's lightbox — portalled, fixed, data-deck-lock — so the card behind it never changes
+   height to show a long wish. */
+.wishModal{
+  /* above the dots, music toggle and scroll cue, which sit at 60 outside the deck */
+  position:fixed; inset:0; z-index:100;
+  display:flex; align-items:center; justify-content:center;
+  padding:clamp(18px,6vw,48px);
+  background:rgba(12,14,9,0.82);
+  backdrop-filter:blur(6px);
+  animation:wishModalIn .2s ease-out both;
+}
+/* Wraps the card (not the whole backdrop) so the close button can be positioned relative to the
+   card's own box and float above it, instead of relative to the card's scroll area where an
+   overlapping button would sit on top of the content and get clipped by overflow-y:auto. */
+.wishModalWrap{
+  position:relative;
+  width:100%; max-width:420px; max-height:100%;
+}
+.wishModalCard{
+  width:100%; max-height:100%; overflow-y:auto;
+  padding:clamp(26px,6vw,34px) clamp(20px,5vw,28px) clamp(20px,5vw,26px);
+  text-align:center;
+  background:linear-gradient(180deg,#fffdf7,#f4eee0);
+  border:1px solid rgba(189,143,69,0.4); border-radius:16px;
+  box-shadow:0 30px 70px -30px rgba(0,0,0,0.8);
+  /* the backdrop closes on click; the card must not pass its own clicks off as backdrop ones */
+  cursor:default;
+  animation:wishModalPop .26s cubic-bezier(.2,.9,.3,1) both;
+}
+/* Sits above the card, outside its border, on the dark backdrop — not inside the scrollable card
+   where it would overlap the quote/heart row and get clipped once the card scrolls. */
+.wishModalClose{
+  position:absolute; top:-44px; right:0;
+  width:32px; height:32px; padding:7px;
+  display:flex; align-items:center; justify-content:center;
+  color:#f4eee0; background:rgba(12,14,9,0.35);
+  border:1px solid rgba(244,238,224,0.5); border-radius:50%;
+  cursor:pointer;
+}
+.wishModalClose svg{ display:block; width:100%; height:100%; }
+.wishModalHead{
+  display:flex; align-items:center; justify-content:space-between; gap:8px;
+  margin-bottom:clamp(2px,1vw,4px);
+}
+.wishModalName{
+  font-family:var(--serif); font-weight:600; font-size:clamp(18px,5vw,22px); line-height:1.25;
+  color:var(--sage-dark); overflow-wrap:break-word;
+}
+.wishModalText{
+  font-family:var(--serif); font-size:clamp(14px,3.8vw,16px); line-height:1.7;
+  color:#4a4230; margin-top:12px; overflow-wrap:break-word;
+}
+/* akad-resepsi-loct.webp, same asset as the card's footer rule, sized down for the popup */
+.wishModalRule{
+  --ww:min(55%, 150px);
+  display:block; width:var(--ww); margin-left:auto; margin-right:auto;
+  margin-top:clamp(16px,4vw,22px);
+  margin-bottom:calc(var(--ww) * -0.1349 + clamp(6px,1.8vw,9px));
+}
+.wishModalWhen{
+  display:flex; flex-wrap:nowrap; align-items:baseline; justify-content:center; gap:6px;
+  font-family:var(--serif); font-size:clamp(12px,3.2vw,13.5px);
+  color:#6a5c3f; opacity:.85;
+}
+
+@keyframes wishModalIn{ from{ opacity:0; } to{ opacity:1; } }
+@keyframes wishModalPop{
+  from{ opacity:0; transform:scale(0.96); }
+  to{ opacity:1; transform:scale(1); }
+}
+
+@media (prefers-reduced-motion: reduce){
+  .wishModal, .wishModalCard{ animation:none; }
 }

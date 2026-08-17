@@ -3,6 +3,7 @@
 /* eslint-disable @next/next/no-img-element */
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { useGuest } from "../GuestContext";
 import { fetchWishes, submitWish, type WishEntry } from "@/lib/rsvp";
 import styles from "./WishesGiftSlide.module.css";
@@ -152,7 +153,9 @@ export default function WishesGiftSlide({ className, innerClassName }: WishesGif
      ResizeObserver fires once as soon as it starts observing, which covers the first measurement
      too, and again whenever the carousel is resized. */
   const [overflowing, setOverflowing] = useState<string[]>([]);
-  const [expandedKey, setExpandedKey] = useState<string | null>(null);
+  /* the wish shown in the popup, or null when it is closed. Replaces the old expand-in-place
+     key: a card that grows is exactly what this must not do. */
+  const [openWish, setOpenWish] = useState<Wish | null>(null);
 
   useEffect(() => {
     const car = carouselRef.current;
@@ -182,6 +185,15 @@ export default function WishesGiftSlide({ className, innerClassName }: WishesGif
   const lastIdx = pageCount - 1;
   // a wish arriving or leaving can strand idx past the end
   const safeIdx = Math.min(idx, lastIdx);
+
+  useEffect(() => {
+    if (!openWish) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setOpenWish(null);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [openWish]);
 
   const goTo = useCallback((i: number) => {
     heldUntil.current = Date.now() + AUTOPLAY_HOLD;
@@ -401,10 +413,9 @@ export default function WishesGiftSlide({ className, innerClassName }: WishesGif
                       i >= safeIdx * PER_VIEW && i < (safeIdx + 1) * PER_VIEW;
                     // only the first card, and only right after this guest sent it
                     const isNew = justAdded && i === 0;
-                    const expanded = expandedKey === w.key;
-                    // an expanded paragraph reports no overflow, so its toggle is kept by the
-                    // expanded flag rather than by the measurement
-                    const canExpand = expanded || overflowing.includes(w.key);
+                    // the same measurement as before — nothing clamps open now, so the flag
+                    // from the ResizeObserver is the whole answer
+                    const canExpand = overflowing.includes(w.key);
                     return (
                       <li
                         key={w.key}
@@ -428,7 +439,7 @@ export default function WishesGiftSlide({ className, innerClassName }: WishesGif
                                 wish fills them, so the rule and date below land at the same place
                                 on every card instead of riding up and down with the text */}
                             <p
-                              className={`${styles.wishText}${expanded ? ` ${styles.wishTextOpen}` : ""}`}
+                              className={styles.wishText}
                               data-wish-text={w.key}
                             >
                               {w.message}
@@ -438,12 +449,12 @@ export default function WishesGiftSlide({ className, innerClassName }: WishesGif
                             <button
                               type="button"
                               className={`${styles.more}${canExpand ? "" : ` ${styles.moreHidden}`}`}
-                              onClick={() => setExpandedKey(expanded ? null : w.key)}
+                              onClick={() => setOpenWish(w)}
                               disabled={!canExpand || !onScreen}
                               aria-hidden={!canExpand}
                               tabIndex={canExpand && onScreen ? undefined : -1}
                             >
-                              {expanded ? "Sembunyikan" : "Selengkapnya"}
+                              Selengkapnya
                             </button>
 
                             <img className={styles.wishRule} src="/assets/akad-resepsi-loct.webp" alt="" />
@@ -465,6 +476,68 @@ export default function WishesGiftSlide({ className, innerClassName }: WishesGif
                   })}
                 </ul>
               </div>
+
+              {openWish &&
+                /* Portalled to <body> for the same reason as the gallery lightbox: .deck is
+                   position:fixed with z-index:10, so nothing inside it can rise above the dots,
+                   music toggle and scroll cue at z-index 60. */
+                createPortal(
+                  <div
+                    className={styles.wishModal}
+                    data-deck-lock
+                    role="dialog"
+                    aria-modal="true"
+                    aria-label={`Ucapan dari ${openWish.name}`}
+                    onClick={(e) => {
+                      if (e.target === e.currentTarget) setOpenWish(null);
+                    }}
+                  >
+                    <div className={styles.wishModalWrap}>
+                      <button
+                        type="button"
+                        className={styles.wishModalClose}
+                        onClick={() => setOpenWish(null)}
+                        aria-label="Tutup ucapan"
+                      >
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                          <path
+                            d="m7 7 10 10M17 7 7 17"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="1.7"
+                            strokeLinecap="round"
+                          />
+                        </svg>
+                      </button>
+                      <div className={styles.wishModalCard}>
+                        {/* same head ornament as the mini card this popup expanded from */}
+                        <div className={styles.wishModalHead} aria-hidden="true">
+                          <span className={styles.quote}>&ldquo;</span>
+                          <span className={styles.heart}>
+                            <Icon name="heart" />
+                          </span>
+                        </div>
+
+                        <p className={styles.wishModalName}>{openWish.name}</p>
+                        <p className={styles.wishModalText}>{openWish.message}</p>
+
+                        <img className={styles.wishModalRule} src="/assets/akad-resepsi-loct.webp" alt="" />
+                        <p className={styles.wishModalWhen}>
+                          <span>{splitWhen(openWish.when).date}</span>
+                          {splitWhen(openWish.when).time && (
+                            <>
+                              <span className={styles.whenSep} aria-hidden="true">
+                                ·
+                              </span>
+                              <span>{splitWhen(openWish.when).time}</span>
+                            </>
+                          )}
+                        </p>
+                      </div>
+                    </div>
+                  </div>,
+                  document.body
+                )}
 
               {/* one dot per page, not per wish */}
               {pageCount > 1 && (
