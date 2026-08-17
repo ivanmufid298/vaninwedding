@@ -72,10 +72,18 @@
   filter:drop-shadow(0 3px 5px rgba(0,0,0,0.13));
   transform-origin:top center; transform-style:preserve-3d; z-index:3;
   transition:transform .95s cubic-bezier(.6,0,.35,1), opacity .45s ease .5s; }
-.seal{ position:absolute; left:50%; top:52%; width:56px; height:56px; transform:translate(-50%,-50%);
-  border-radius:50%; background:var(--paper); border:1px solid var(--gold); box-shadow:0 4px 10px rgba(0,0,0,0.25);
+/* The wax seal is now the invitation-logo artwork rather than a drawn SVG. No background, border
+   or border-radius here any more: the logo carries its own cream disc and gold ring, so the old
+   container chrome would have drawn a second ring around it. Sized so the disc lands at roughly
+   the 56px the SVG seal occupied — the artwork's florals overhang the circle by ~8% a side, so the
+   box has to run wider than the circle it contains. */
+.seal{ position:absolute; left:50%; top:52%; width:68px; height:68px; transform:translate(-50%,-50%);
   display:flex; align-items:center; justify-content:center; z-index:4;
   transition:transform .5s cubic-bezier(.34,1.56,.64,1) .05s, opacity .4s ease .05s; }
+/* drop-shadow, not box-shadow: the artwork is a cutout whose florals break the circle, and a box
+   shadow would trace a square the picture never fills */
+.sealLogo{ display:block; width:100%; height:auto;
+  filter:drop-shadow(0 3px 7px rgba(40,32,16,0.32)); }
 
 /* Offsets come from each asset's measured alpha box, so the artwork (not its transparent
    padding) lands on the envelope's corner and overhangs slightly, as in the reference. */
