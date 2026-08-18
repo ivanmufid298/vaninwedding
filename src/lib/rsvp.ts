@@ -2,8 +2,9 @@
    Two sheets sit behind it: "Guest" (ID, Nama) is the guest list the invitation links are checked
    against, and "RSVP" (ID, Nama, Status, Pax, Timestamp) is where confirmations land. */
 
-// Apps Script mints a new /exec URL for every *new* deployment, so this is overridable without a
-// code change — set NEXT_PUBLIC_RSVP_ENDPOINT if the script is redeployed rather than updated.
+/* Guest and wish traffic goes through the Next.js proxy at /api/* — the script URL lives in
+   GOOGLE_SCRIPT_URL, server-side (see src/lib/gscript.ts), so it is not in the browser bundle.
+   This constant now serves only submitRsvp below, which is left exactly as it was. */
 const ENDPOINT =
   process.env.NEXT_PUBLIC_RSVP_ENDPOINT ??
   "https://script.google.com/macros/s/AKfycbx_d3REGFl-yGRVd1f-X1IYSz2u0oKpPI50zGrX0GZny56UFoKhLR8LQNVOL8LYgcQ/exec";
@@ -23,7 +24,7 @@ export async function fetchGuest(
   signal?: AbortSignal
 ): Promise<Guest | null> {
   const key = query.id ? `id=${encodeURIComponent(query.id)}` : `nama=${encodeURIComponent(query.nama ?? "")}`;
-  const res = await fetch(`${ENDPOINT}?action=guest&${key}`, { signal });
+  const res = await fetch(`/api/guest?${key}`, { signal });
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
   const data = await res.json();
   if (!data?.success) return null;
@@ -60,29 +61,52 @@ export interface WishEntry {
   created_at: string;
 }
 
-/** The newest wishes for the guestbook wall. The script already sorts newest-first and caps the
- *  list at ten, so this returns them as they come. */
-export async function fetchWishes(signal?: AbortSignal): Promise<WishEntry[]> {
-  const res = await fetch(`${ENDPOINT}?action=wish`, { signal });
+/** One page of the guestbook wall, as handed back by the script's cursor pagination. The script
+ *  is the sole authority on ordering and on when the wall is exhausted — the client just carries
+ *  `nextCursor`/`nextCursorRow` back on the following call and stops once `hasMore` is false. */
+export interface WishPage {
+  data: WishEntry[];
+  hasMore: boolean;
+  nextCursor: string | null;
+  nextCursorRow: number | null;
+}
+
+/** Fetches one page of wishes, newest-first. With no params this is the initial ten for the
+ *  guestbook wall. To page further back, pass the previous page's `nextCursor`/`nextCursorRow`
+ *  as `before`/`beforeRow` — the script excludes anything at or after that point. */
+export async function fetchWishes(
+  params?: { before?: string | null; beforeRow?: number | null; limit?: number },
+  signal?: AbortSignal
+): Promise<WishPage> {
+  const qs = [`limit=${params?.limit ?? 10}`];
+  if (params?.before) qs.push(`before=${encodeURIComponent(params.before)}`);
+  if (params?.beforeRow != null) qs.push(`beforeRow=${params.beforeRow}`);
+
+  const res = await fetch(`/api/wish?${qs.join("&")}`, { signal });
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
   const data = await res.json();
   if (!data?.success || !Array.isArray(data.data)) {
     throw new Error(data?.message || "Ucapan gagal dimuat.");
   }
-  return data.data.map((w: Partial<WishEntry>) => ({
-    nama: String(w?.nama ?? ""),
-    ucapan: String(w?.ucapan ?? ""),
-    created_at: String(w?.created_at ?? ""),
-  }));
+  return {
+    data: data.data.map((w: Partial<WishEntry>) => ({
+      nama: String(w?.nama ?? ""),
+      ucapan: String(w?.ucapan ?? ""),
+      created_at: String(w?.created_at ?? ""),
+    })),
+    hasMore: Boolean(data.hasMore),
+    nextCursor: data.nextCursor ?? null,
+    nextCursorRow: data.nextCursorRow ?? null,
+  };
 }
 
 /** Appends a wish to the Wish sheet. The guest's name is looked up from the id server-side, so
  *  only the id and the message go up. Note the ?action=wish on the URL: doPost routes on the
  *  query parameter, and without it the script would treat this as an RSVP. */
 export async function submitWish(input: { id: string; ucapan: string }): Promise<void> {
-  const res = await fetch(`${ENDPOINT}?action=wish`, {
+  const res = await fetch("/api/wish", {
     method: "POST",
-    // text/plain for the same reason as submitRsvp — see the note there
+    // the proxy forwards this content-type on to the script unchanged
     headers: { "Content-Type": "text/plain;charset=utf-8" },
     body: JSON.stringify(input),
   });

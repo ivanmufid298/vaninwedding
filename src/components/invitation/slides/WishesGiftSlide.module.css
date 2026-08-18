@@ -319,10 +319,39 @@
 }
 .sendNoteBad{ color:#e6b7a6; opacity:1; }
 
-.dots{
-  display:flex; justify-content:center; gap:7px;
+/* Three tracks, not a flex row: the side columns are equal-width whatever they hold, so the dots
+   sit on the page's centre line whether one trigger is showing, both, or neither. A flex row would
+   shove them off-centre the moment only one side had a label. */
+.pager{
+  display:grid; grid-template-columns:1fr auto 1fr; align-items:center; gap:8px;
   margin-top:clamp(12px,3.2vw,16px);
 }
+.pagerSide{ display:flex; align-items:center; justify-content:flex-start; min-width:0; }
+.pagerSideEnd{ justify-content:flex-end; }
+/* A zero-width space carrying the trigger's own typography, so each side column always holds a
+   text line box whether or not a trigger is in it. Without it the row is only as tall as a 7px dot
+   until a label appears, and everything below — the gift divider especially — jumps by the
+   difference. Deriving the height from the same font as the label keeps the two in step at every
+   viewport, where a hand-picked min-height would drift. */
+.pagerSide::before{
+  content:"\200b";
+  font-family:var(--sans); font-size:clamp(10px,2.7vw,11.5px);
+}
+
+.dots{
+  display:flex; align-items:center; justify-content:center; gap:7px;
+}
+/* The batch triggers. They carry .more as well, so the underlined text-link treatment is literally
+   the same one "Selengkapnya" uses; this only recolours them to the page's ivory — they sit on the
+   dark green rail rather than inside a cream card — and undoes the parts of .more that assume it
+   is stacked inside one. */
+.pagerBtn{
+  align-self:auto; margin-top:0;
+  white-space:nowrap;
+  color:#dabe87;
+  text-decoration: none;
+}
+.pagerBtn:disabled{ opacity:.55; cursor:default; }
 .dot, .dotOn{
   width:7px; height:7px; padding:0; border:0; border-radius:50%; cursor:pointer;
   background:rgba(224,189,119,0.35);

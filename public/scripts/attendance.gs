@@ -14,17 +14,59 @@ function checkAttendance(body) {
       });
     }
 
-    const exist = findRsvp(id);
+    // Validasi dari Guest
+    const guest = findGuest(id);
 
-    if (!exist) {
+    if (!guest) {
       return json({
         success: false,
-        code: "NOT_FOUND",
-        message: "RSVP not found."
+        code: "NOT_INVITED",
+        message: "Guest not found."
       });
     }
 
-    if (exist.attendance === true || exist.attendance === "TRUE") {
+    const sheet = getRsvpSheet();
+    let exist = findRsvp(id);
+
+    const now = new Date();
+
+    // Belum pernah RSVP → bikin row baru
+    if (!exist) {
+      sheet.appendRow([
+        guest.id,          // A ID
+        guest.nama,        // B Nama
+        "",                // C Status
+        "",                // D Pax
+        "",                // E RSVP Time
+        "Sudah hadir",      // F Attendance
+        now                // G Attendance Time
+      ]);
+
+      const row = sheet.getLastRow();
+
+      sheet.getRange(row, 6)
+        .setBackground("#34A853")
+        .setFontColor("#FFFFFF")
+        .setFontWeight("bold");
+
+      sheet.getRange(row, 7)
+        .setBackground("#E6F4EA");
+
+      return json({
+        success: true,
+        nama: guest.nama,
+        attendance_time: Utilities.formatDate(
+          now,
+          Session.getScriptTimeZone(),
+          "dd MMMM yyyy • HH.mm"
+        )
+      });
+    }
+
+    // Sudah pernah check-in
+    const attendance = String(exist.attendance).trim().toLowerCase();
+
+    if (attendance === "Sudah hadir") {
       return json({
         success: false,
         code: "ALREADY_CHECKED_IN",
@@ -38,15 +80,20 @@ function checkAttendance(body) {
       });
     }
 
-    const now = new Date();
-    const sheet = getRsvpSheet();
+    // Update attendance
+    sheet.getRange(exist.row, 6)
+      .setValue("Sudah Hadir")
+      .setBackground("#34A853")   // Fill hijau
+      .setFontColor("#FFFFFF")    // Teks putih
+      .setFontWeight("bold");
 
-    sheet.getRange(exist.row, 6).setValue(true);
-    sheet.getRange(exist.row, 7).setValue(now);
+    sheet.getRange(exist.row, 7)
+      .setValue(now)
+      .setBackground("#E6F4EA");  // Hijau muda
 
     return json({
       success: true,
-      nama: exist.nama,
+      nama: guest.nama,
       attendance_time: Utilities.formatDate(
         now,
         Session.getScriptTimeZone(),

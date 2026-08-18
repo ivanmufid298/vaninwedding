@@ -15,13 +15,17 @@ interface WishesGiftSlideProps {
 
 /** one card on the wall, mapped from a Wish sheet row */
 interface Wish {
-  /** the sheet has no id column, so the key is built from the row's own content */
+  /** the sheet has no id column, so the key is built from the row's own content instead of a
+   *  batch-local index, which would collide as batches are swapped in and out */
   key: string;
   name: string;
   message: string;
   /** already formatted by the script, e.g. "12 Agustus 2026 • 11.50" */
   when: string;
 }
+
+/** the cursor that produced a batch — null means "the newest page", which needs no cursor */
+type Cursor = { before: string | null; beforeRow: number | null } | null;
 
 const ACCOUNTS = [
   { bank: "BCA", logo: "/assets/bca.webp", holder: "Banin Azzibara", number: "8692136801" },
@@ -30,8 +34,8 @@ const ACCOUNTS = [
 
 /** cards visible at once — must match the .wish flex-basis in the stylesheet */
 const PER_VIEW = 2;
-/** the script already returns only the ten newest; this is a guard, not the limit */
-const MAX_WISHES = 10;
+/** wishes fetched per batch, both for the initial load and every "load more" page */
+const WISH_PAGE_SIZE = 10;
 const AUTOPLAY_MS = 5000;
 /** how long a manual swipe or dot tap pauses the auto-advance */
 const AUTOPLAY_HOLD = 9000;
@@ -40,9 +44,15 @@ const SWIPE_MIN = 40;
 /** how long a freshly sent wish keeps its highlight */
 const NEW_WISH_MS = 2200;
 
-function toWish(entry: WishEntry, i: number): Wish {
+/** nama + ucapan + created_at is the stable identity the sheet gives us — used both as the React
+ *  key and to dedupe a freshly-loaded batch against wishes already on the wall */
+function wishKey(entry: WishEntry) {
+  return `${entry.nama}__${entry.ucapan}__${entry.created_at}`;
+}
+
+function toWish(entry: WishEntry): Wish {
   return {
-    key: `${i}-${entry.created_at}-${entry.nama}`,
+    key: wishKey(entry),
     name: entry.nama || "Tamu",
     message: entry.ucapan,
     when: entry.created_at,
@@ -105,6 +115,19 @@ export default function WishesGiftSlide({ className, innerClassName }: WishesGif
 
   const [wishes, setWishes] = useState<Wish[]>([]);
   const [wall, setWall] = useState<"loading" | "ready" | "error">("loading");
+  // cursor for the next older batch, as handed back by the script; hasMore is what decides
+  // whether the dots row carries a "tampilkan lebih banyak" trigger after the last dot
+  const [nextCursor, setNextCursor] = useState<string | null>(null);
+  const [nextCursorRow, setNextCursorRow] = useState<number | null>(null);
+  const [hasMore, setHasMore] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [loadMoreError, setLoadMoreError] = useState(false);
+  /* The script only pages one way — `before` walks backwards in time — so stepping to a *newer*
+     batch means re-fetching with the cursor that produced it. pageCursor is the one on screen,
+     history the trail of newer ones behind it; its length is what decides whether "Sebelumnya"
+     has anywhere to go. */
+  const [pageCursor, setPageCursor] = useState<Cursor>(null);
+  const [history, setHistory] = useState<Cursor[]>([]);
   const [draft, setDraft] = useState("");
   const [send, setSend] = useState<"idle" | "sending" | "ok" | "error">("idle");
   const [sendMsg, setSendMsg] = useState("");
@@ -119,13 +142,20 @@ export default function WishesGiftSlide({ className, innerClassName }: WishesGif
   const [justAdded, setJustAdded] = useState(false);
   const newTimer = useRef<number | null>(null);
 
-  /* Loads the wall. The script sorts newest-first and caps at ten, so the response is taken as
-     given. Aborting matters because this also runs after a send. */
+  /* Loads the first page of the wall — the newest WISH_PAGE_SIZE wishes. The script sorts
+     newest-first, so the response is taken as given. Aborting matters because this also runs
+     after a send, which resets the wall back to page one. */
   const loadWishes = useCallback((signal?: AbortSignal) => {
-    return fetchWishes(signal)
-      .then((rows) => {
+    return fetchWishes({ limit: WISH_PAGE_SIZE }, signal)
+      .then((page) => {
         if (signal?.aborted) return;
-        setWishes(rows.map(toWish));
+        setWishes(page.data.map(toWish));
+        setHasMore(page.hasMore);
+        setNextCursor(page.nextCursor);
+        setNextCursorRow(page.nextCursorRow);
+        setPageCursor(null);
+        setHistory([]);
+        setLoadMoreError(false);
         setWall("ready");
       })
       .catch((err) => {
@@ -133,6 +163,60 @@ export default function WishesGiftSlide({ className, innerClassName }: WishesGif
         setWall("error");
       });
   }, []);
+
+  /* Swaps the batch on screen for another one, in either direction — the wall stays ten cards and
+     five dots however far back it is paged. loadingMore both drives the triggers' labels and
+     guards against a second request landing while the first is still in flight. */
+  const loadBatch = useCallback(
+    async (cursor: Cursor, move: "older" | "newer") => {
+      if (loadingMore) return;
+      setLoadingMore(true);
+      setLoadMoreError(false);
+      try {
+        const page = await fetchWishes({
+          before: cursor?.before ?? null,
+          beforeRow: cursor?.beforeRow ?? null,
+          limit: WISH_PAGE_SIZE,
+        });
+        /* still deduped, now within the batch itself: two identical rows in one page would
+           otherwise collide on the React key that nama+ucapan+created_at produces */
+        const seen = new Set<string>();
+        const fresh: Wish[] = [];
+        for (const entry of page.data) {
+          const w = toWish(entry);
+          if (seen.has(w.key)) continue;
+          seen.add(w.key);
+          fresh.push(w);
+        }
+        setWishes(fresh);
+        setHasMore(page.hasMore);
+        setNextCursor(page.nextCursor);
+        setNextCursorRow(page.nextCursorRow);
+        // going older buries the current cursor; going newer is what digs it back out
+        setHistory((h) => (move === "older" ? [...h, pageCursor] : h.slice(0, -1)));
+        setPageCursor(cursor);
+        /* A replaced batch shares nothing with the old one, so the strip has to land somewhere
+           deliberate: forwards at the first card, backwards at the last — the card you would have
+           arrived from, and the end you carry on reading backwards from. */
+        setIdx(move === "older" ? 0 : Math.max(0, Math.ceil(fresh.length / PER_VIEW) - 1));
+      } catch {
+        setLoadMoreError(true);
+      } finally {
+        setLoadingMore(false);
+      }
+    },
+    [loadingMore, pageCursor]
+  );
+
+  const loadMoreWishes = useCallback(() => {
+    if (!hasMore) return;
+    return loadBatch({ before: nextCursor, beforeRow: nextCursorRow }, "older");
+  }, [hasMore, nextCursor, nextCursorRow, loadBatch]);
+
+  const loadPrevWishes = useCallback(() => {
+    if (history.length === 0) return;
+    return loadBatch(history[history.length - 1], "newer");
+  }, [history, loadBatch]);
 
   useEffect(() => {
     const ac = new AbortController();
@@ -177,14 +261,16 @@ export default function WishesGiftSlide({ className, innerClassName }: WishesGif
   // while so the cards aren't yanked away from under someone mid-sentence
   const heldUntil = useRef(0);
 
-  /* The wall shows the newest MAX_WISHES, a page of PER_VIEW at a time — so ten wishes give the
-     five dots this is meant to carry. Paging, rather than sliding a card at a time, is what makes
-     the dot count divide cleanly: nine one-card steps over ten wishes would need nine dots. */
-  const shown = wishes.slice(0, MAX_WISHES);
-  const pageCount = Math.max(1, Math.ceil(shown.length / PER_VIEW));
+  /* The strip holds real wish cards and nothing else — paging, dots and swipe all count the
+     batch itself, so ten wishes is five dots exactly as it was before pagination existed. */
+  const pageCount = Math.max(1, Math.ceil(wishes.length / PER_VIEW));
   const lastIdx = pageCount - 1;
   // a wish arriving or leaving can strand idx past the end
   const safeIdx = Math.min(idx, lastIdx);
+  /* Each trigger belongs to one end of the batch and shows only there: you reach older wishes by
+     paging to the last card, newer ones by paging back to the first. */
+  const showNext = hasMore && safeIdx === lastIdx;
+  const showPrev = history.length > 0 && safeIdx === 0;
 
   useEffect(() => {
     if (!openWish) return;
@@ -385,7 +471,7 @@ export default function WishesGiftSlide({ className, innerClassName }: WishesGif
 
               {/* the wall's own states — the carousel below stays mounted either way, so its
                   ResizeObserver keeps its reference to the track */}
-              {wall !== "ready" || shown.length === 0 ? (
+              {wall !== "ready" || wishes.length === 0 ? (
                 <p className={styles.wallNote}>
                   {wall === "loading"
                     ? "Memuat ucapan…"
@@ -399,7 +485,7 @@ export default function WishesGiftSlide({ className, innerClassName }: WishesGif
                   no arrows. The whole strip is laid out side by side and slid with a transform,
                   so each card keeps its own height and nothing jumps as it moves. */}
               <div
-                className={`${styles.carousel}${shown.length === 0 ? ` ${styles.carouselEmpty}` : ""}`}
+                className={`${styles.carousel}${wishes.length === 0 ? ` ${styles.carouselEmpty}` : ""}`}
                 ref={carouselRef}
                 onTouchStart={onTouchStart}
                 onTouchEnd={onTouchEnd}
@@ -408,9 +494,10 @@ export default function WishesGiftSlide({ className, innerClassName }: WishesGif
                   className={styles.track}
                   style={{ transform: `translate3d(${-safeIdx * 100}%,0,0)` }}
                 >
-                  {shown.map((w, i) => {
+                  {wishes.map((w, i) => {
                     const onScreen =
                       i >= safeIdx * PER_VIEW && i < (safeIdx + 1) * PER_VIEW;
+
                     // only the first card, and only right after this guest sent it
                     const isNew = justAdded && i === 0;
                     // the same measurement as before — nothing clamps open now, so the flag
@@ -539,18 +626,50 @@ export default function WishesGiftSlide({ className, innerClassName }: WishesGif
                   document.body
                 )}
 
-              {/* one dot per page, not per wish */}
-              {pageCount > 1 && (
-                <div className={styles.dots}>
-                  {Array.from({ length: pageCount }, (_, i) => (
-                    <button
-                      type="button"
-                      key={i}
-                      className={i === safeIdx ? styles.dotOn : styles.dot}
-                      onClick={() => goTo(i)}
-                      aria-label={`Ucapan ${i * PER_VIEW + 1}–${Math.min((i + 1) * PER_VIEW, shown.length)} dari ${shown.length}`}
-                    />
-                  ))}
+              {/* One dot per page, with the batch triggers pinned to the rail's edges so the dots
+                  themselves stay centred whether one, both or neither trigger is showing. Each
+                  appears only at the end it belongs to: "Selanjutnya" on the last dot, where the
+                  batch runs out, "Sebelumnya" on the first, where it began. */}
+              {(pageCount > 1 || showPrev || showNext) && (
+                <div className={styles.pager}>
+                  <div className={styles.pagerSide}>
+                    {showPrev && (
+                      <button
+                        type="button"
+                        className={`${styles.more} ${styles.pagerBtn}`}
+                        onClick={() => void loadPrevWishes()}
+                        disabled={loadingMore}
+                      >
+                        {loadingMore ? "Memuat…" : loadMoreError ? "Coba lagi" : "« Sebelumnya"}
+                      </button>
+                    )}
+                  </div>
+
+                  <div className={styles.dots}>
+                    {pageCount > 1 &&
+                      Array.from({ length: pageCount }, (_, i) => (
+                        <button
+                          type="button"
+                          key={i}
+                          className={i === safeIdx ? styles.dotOn : styles.dot}
+                          onClick={() => goTo(i)}
+                          aria-label={`Ucapan ${i * PER_VIEW + 1}–${Math.min((i + 1) * PER_VIEW, wishes.length)} dari ${wishes.length}`}
+                        />
+                      ))}
+                  </div>
+
+                  <div className={`${styles.pagerSide} ${styles.pagerSideEnd}`}>
+                    {showNext && (
+                      <button
+                        type="button"
+                        className={`${styles.more} ${styles.pagerBtn}`}
+                        onClick={() => void loadMoreWishes()}
+                        disabled={loadingMore}
+                      >
+                        {loadingMore ? "Memuat…" : loadMoreError ? "Coba lagi" : "Selanjutnya »"}
+                      </button>
+                    )}
+                  </div>
                 </div>
               )}
 

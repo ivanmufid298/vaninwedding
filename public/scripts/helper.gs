@@ -17,49 +17,37 @@ function json(data) {
 }
 
 function findGuest(id) {
-
   const data = getGuestSheet().getDataRange().getValues();
 
   for (let i = 1; i < data.length; i++) {
-
     if (String(data[i][0]).trim() === String(id).trim()) {
-
       return {
         row: i + 1,
         id: data[i][0],
         nama: data[i][1]
       };
-
     }
-
   }
 
   return null;
-
 }
 
-function findRsvp(id){
-
+function findRsvp(id) {
   const rows = getRsvpSheet().getDataRange().getValues();
 
-  for(let i=1;i<rows.length;i++){
-
-      if(String(rows[i][0]).trim() === String(id).trim()){
-
-          return{
-              row:i+1,
-              id:rows[i][0],
-              nama:rows[i][1],
-              attendance:rows[i][5],
-              attendanceTime:rows[i][6]
-          }
-
-      }
-
+  for (let i = 1; i < rows.length; i++) {
+    if (String(rows[i][0]).trim() === String(id).trim()) {
+      return {
+        row: i + 1,
+        id: rows[i][0],
+        nama: rows[i][1],
+        attendance: rows[i][5],      // Kolom F
+        attendanceTime: rows[i][6]   // Kolom G
+      };
+    }
   }
 
   return null;
-
 }
 
 function getWishSheet() {
